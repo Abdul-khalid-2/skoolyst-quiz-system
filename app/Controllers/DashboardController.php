@@ -7,16 +7,11 @@ use Skoolyst\Core\Controller;
 use Skoolyst\Core\Validator;
 use Skoolyst\Models\MockTest;
 use Skoolyst\Models\TestType;
-use Skoolyst\Models\Topic;
 use Skoolyst\Models\User;
 
 class DashboardController extends Controller {
     public function index(): void {
         $this->view('admin.dashboard');
-    }
-
-    public function topics(): void {
-        $this->view('admin.topics', ['topics' => Topic::all()]);
     }
 
     public function testTypes(): void {
