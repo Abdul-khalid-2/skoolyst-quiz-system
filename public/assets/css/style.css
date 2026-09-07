@@ -279,6 +279,11 @@ a:hover { color: var(--sk-navy); }
   box-shadow: var(--sk-shadow-md);
   transform: translateY(-2px);
 }
+.sk-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
 .sk-card-icon {
   width: 52px;
   height: 52px;

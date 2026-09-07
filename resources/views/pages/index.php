@@ -78,7 +78,7 @@
             </div>
             <a href="{{ route('test-types.index') }}" class="btn btn-sk-outline btn-sm-sk">View All <i class="bi bi-arrow-right ms-1"></i></a>
         </div>
-        <div class="row g-4">
+        <div class="sk-card-grid">
             @include('components.subject-card', ['name' => 'MDCAT', 'icon' => 'bi-heart-pulse', 'icon_bg' => 'bg-icon-navy', 'description' => 'Medical and Dental College Admission Test preparation with comprehensive MCQs.', 'topics' => '4', 'mcqs' => '3,500', 'slug' => 'mdcat'])
             @include('components.subject-card', ['name' => 'ECAT', 'icon' => 'bi-cpu', 'icon_bg' => 'bg-icon-cyan', 'description' => 'Engineering College Admission Test practice with physics, math, and chemistry MCQs.', 'topics' => '4', 'mcqs' => '2,800', 'slug' => 'ecat'])
             @include('components.subject-card', ['name' => 'School Exams', 'icon' => 'bi-backpack', 'icon_bg' => 'bg-icon-gold', 'description' => 'Practice MCQs for school-level exams across all major subjects and grade levels.', 'topics' => '8', 'mcqs' => '5,200', 'slug' => 'school'])
@@ -96,7 +96,7 @@
             </div>
             <a href="{{ route('subjects.index') }}" class="btn btn-sk-outline btn-sm-sk">View All <i class="bi bi-arrow-right ms-1"></i></a>
         </div>
-        <div class="row g-4">
+        <div class="sk-card-grid">
             @include('components.subject-card', ['name' => 'Biology', 'icon' => 'bi-tree', 'icon_bg' => 'bg-icon-success', 'description' => 'Cell biology, genetics, human physiology, ecology, and more.', 'topics' => '12', 'mcqs' => '2,500', 'slug' => 'biology'])
             @include('components.subject-card', ['name' => 'Chemistry', 'icon' => 'bi-flask', 'icon_bg' => 'bg-icon-info', 'description' => 'Organic, inorganic, physical chemistry, periodic table, and reactions.', 'topics' => '10', 'mcqs' => '2,200', 'slug' => 'chemistry'])
             @include('components.subject-card', ['name' => 'Physics', 'icon' => 'bi-atom', 'icon_bg' => 'bg-icon-navy', 'description' => 'Mechanics, electricity, magnetism, optics, and modern physics.', 'topics' => '11', 'mcqs' => '2,000', 'slug' => 'physics'])
