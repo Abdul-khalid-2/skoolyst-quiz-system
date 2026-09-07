@@ -8,7 +8,7 @@
         <h2 class="mb-0">MCQs</h2>
         <p class="text-secondary-custom mb-0">Manage the multiple choice question bank.</p>
     </div>
-    <button class="sk-dash-quick-btn"><i class="bi bi-plus-circle text-navy"></i> Add MCQ</button>
+    <a href="{{ route('dashboard.mcqs.create') }}" class="sk-dash-quick-btn text-decoration-none"><i class="bi bi-plus-circle text-navy"></i> Add MCQ</a>
 </div>
 
 @if(count($mcqs) > 0)
@@ -21,6 +21,7 @@
                 <th>Topic</th>
                 <th>Difficulty</th>
                 <th>Created</th>
+                <th class="text-end">Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -31,6 +32,13 @@
                 <td>{{ $mcq['topic_name'] ?? '—' }}</td>
                 <td><span class="sk-badge sk-badge-{{ $mcq['difficulty'] }}">{{ ucfirst($mcq['difficulty']) }}</span></td>
                 <td>{{ format_date($mcq['created_at']) }}</td>
+                <td class="text-end">
+                    <a href="{{ route('dashboard.mcqs.edit', $mcq['id']) }}" class="btn btn-sk-outline btn-sm-sk"><i class="bi bi-pencil"></i></a>
+                    <form method="POST" action="{{ route('dashboard.mcqs.delete', $mcq['id']) }}" class="d-inline" onsubmit="return confirm('Delete this MCQ? This cannot be undone.');">
+                        <?= csrf_field() ?>
+                        <button type="submit" class="btn btn-sk-outline btn-sm-sk text-danger"><i class="bi bi-trash"></i></button>
+                    </form>
+                </td>
             </tr>
             @endforeach
         </tbody>

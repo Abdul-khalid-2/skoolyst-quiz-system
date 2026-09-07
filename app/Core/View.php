@@ -60,7 +60,7 @@ class View {
         $items = is_array($items) ? $items : iterator_to_array($items);
         $count = count($items);
         $i = 0;
-        foreach ($items as $item) {
+        foreach ($items as $key => $item) {
             $i++;
             $loop = new \stdClass();
             $loop->index = $i - 1;
@@ -68,7 +68,7 @@ class View {
             $loop->count = $count;
             $loop->first = $i === 1;
             $loop->last = $i === $count;
-            yield [$loop, $item];
+            yield [$loop, $key, $item];
         }
     }
 
@@ -130,8 +130,11 @@ class View {
         );
 
         $tpl = preg_replace_callback(
-            "/@foreach\\(\\s*(.+?)\\s+as\\s+(\\\$[a-zA-Z_][a-zA-Z0-9_]*)\\s*\\)/",
-            fn($m) => "<?php foreach (\\Skoolyst\\Core\\View::iterate({$m[1]}) as [\$loop, {$m[2]}]): ?>",
+            "/@foreach\\(\\s*(.+?)\\s+as\\s+(?:(\\\$[a-zA-Z_][a-zA-Z0-9_]*)\\s*=>\\s*)?(\\\$[a-zA-Z_][a-zA-Z0-9_]*)\\s*\\)/",
+            function ($m) {
+                $keyVar = $m[2] !== '' ? $m[2] : '$__key';
+                return "<?php foreach (\\Skoolyst\\Core\\View::iterate({$m[1]}) as [\$loop, {$keyVar}, {$m[3]}]): ?>";
+            },
             $tpl
         );
         $tpl = str_replace('@endforeach', '<?php endforeach; ?>', $tpl);

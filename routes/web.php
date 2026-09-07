@@ -4,6 +4,7 @@
 use Skoolyst\Controllers\PageController;
 use Skoolyst\Controllers\DashboardController;
 use Skoolyst\Controllers\AuthController;
+use Skoolyst\Controllers\Admin\McqController;
 use Skoolyst\Middleware\GuestMiddleware;
 use Skoolyst\Middleware\AuthMiddleware;
 
@@ -28,7 +29,14 @@ $router->get('/mock-tests/{slug}/take', [PageController::class, 'mockTestsTake']
 $router->get('/mock-tests/{slug}/result', [PageController::class, 'mockTestsResult'])->name('mock-tests.result');
 
 $router->get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-$router->get('/dashboard/mcqs', [DashboardController::class, 'mcqs'])->name('dashboard.mcqs');
+
+$router->get('/dashboard/mcqs', [McqController::class, 'index'])->name('dashboard.mcqs');
+$router->get('/dashboard/mcqs/create', [McqController::class, 'create'])->name('dashboard.mcqs.create');
+$router->post('/dashboard/mcqs/create', [McqController::class, 'store']);
+$router->get('/dashboard/mcqs/{id}/edit', [McqController::class, 'edit'])->name('dashboard.mcqs.edit');
+$router->post('/dashboard/mcqs/{id}/edit', [McqController::class, 'update']);
+$router->post('/dashboard/mcqs/{id}/delete', [McqController::class, 'destroy'])->name('dashboard.mcqs.delete');
+
 $router->get('/dashboard/subjects', [DashboardController::class, 'subjects'])->name('dashboard.subjects');
 $router->get('/dashboard/topics', [DashboardController::class, 'topics'])->name('dashboard.topics');
 $router->get('/dashboard/test-types', [DashboardController::class, 'testTypes'])->name('dashboard.test-types');

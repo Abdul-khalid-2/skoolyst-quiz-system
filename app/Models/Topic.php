@@ -22,4 +22,19 @@ class Topic extends Model {
     public static function count(): int {
         return (int) Database::connection()->query('SELECT COUNT(*) FROM mcq_topics')->fetchColumn();
     }
+
+    public static function allGroupedBySubject(): array {
+        $grouped = [];
+        foreach (self::all() as $topic) {
+            $grouped[$topic['subject_name']][] = $topic;
+        }
+        return $grouped;
+    }
+
+    public static function find(int $id): ?array {
+        $stmt = Database::connection()->prepare('SELECT * FROM mcq_topics WHERE id = ? LIMIT 1');
+        $stmt->execute([$id]);
+        $topic = $stmt->fetch(\PDO::FETCH_ASSOC);
+        return $topic ?: null;
+    }
 }
