@@ -108,7 +108,7 @@ class View {
             $tpl
         );
 
-        $tpl = self::compileIncludes($tpl);
+        $tpl = self::compileBalancedDirective($tpl, 'include', fn($args) => "<?= \\Skoolyst\\Core\\View::renderInclude({$args}) ?>");
 
         $tpl = preg_replace_callback(
             "/@section\\(\\s*'([^']+)'\\s*,\\s*(.+?)\\)/",
@@ -136,16 +136,8 @@ class View {
         );
         $tpl = str_replace('@endforeach', '<?php endforeach; ?>', $tpl);
 
-        $tpl = preg_replace_callback(
-            "/@if\\(\\s*(.+?)\\s*\\)/",
-            fn($m) => "<?php if ({$m[1]}): ?>",
-            $tpl
-        );
-        $tpl = preg_replace_callback(
-            "/@elseif\\(\\s*(.+?)\\s*\\)/",
-            fn($m) => "<?php elseif ({$m[1]}): ?>",
-            $tpl
-        );
+        $tpl = self::compileBalancedDirective($tpl, 'if', fn($args) => "<?php if ({$args}): ?>");
+        $tpl = self::compileBalancedDirective($tpl, 'elseif', fn($args) => "<?php elseif ({$args}): ?>");
         $tpl = str_replace('@else', '<?php else: ?>', $tpl);
         $tpl = str_replace('@endif', '<?php endif; ?>', $tpl);
 
@@ -158,13 +150,14 @@ class View {
         return $tpl;
     }
 
-    private static function compileIncludes(string $tpl): string {
+    private static function compileBalancedDirective(string $tpl, string $directive, callable $wrap): string {
         $out = '';
         $pos = 0;
+        $needle = '@' . $directive . '(';
 
-        while (($p = strpos($tpl, '@include(', $pos)) !== false) {
+        while (($p = strpos($tpl, $needle, $pos)) !== false) {
             $out .= substr($tpl, $pos, $p - $pos);
-            $openParen = $p + strlen('@include');
+            $openParen = $p + strlen('@' . $directive);
             $close = self::findMatchingParen($tpl, $openParen);
 
             if ($close === -1) {
@@ -174,7 +167,7 @@ class View {
             }
 
             $args = substr($tpl, $openParen + 1, $close - $openParen - 1);
-            $out .= "<?= \\Skoolyst\\Core\\View::renderInclude({$args}) ?>";
+            $out .= $wrap($args);
             $pos = $close + 1;
         }
 

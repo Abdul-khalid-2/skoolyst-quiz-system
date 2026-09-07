@@ -803,3 +803,50 @@ a:hover { color: var(--sk-navy); }
   cursor: pointer;
   padding: 0.25rem 0.5rem;
 }
+
+/* ---------- Auth ---------- */
+.sk-auth-body {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--sk-dark-navy), var(--sk-navy));
+  padding: 2rem 1rem;
+}
+.sk-auth-card {
+  width: 100%;
+  max-width: 420px;
+  background-color: var(--sk-card);
+  border-radius: var(--sk-radius-lg);
+  box-shadow: var(--sk-shadow-lg);
+  padding: 2.25rem 2rem;
+}
+.sk-auth-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: var(--sk-text);
+  text-decoration: none;
+  margin-bottom: 1.75rem;
+}
+.sk-auth-brand .sk-logo-mark {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, var(--sk-navy), var(--sk-cyan));
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--sk-white);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.sk-auth-brand span { color: var(--sk-cyan); }
+.sk-auth-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 0.25rem; }
+.sk-auth-subtitle { color: var(--sk-text-secondary); margin-bottom: 1.5rem; font-size: 0.92rem; }
+.sk-auth-footer { text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: var(--sk-text-secondary); }
+.sk-auth-footer a { color: var(--sk-navy); font-weight: 600; text-decoration: none; }
+.sk-auth-footer a:hover { text-decoration: underline; }
+.sk-auth-label { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.35rem; }

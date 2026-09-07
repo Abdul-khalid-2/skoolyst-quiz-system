@@ -19,7 +19,7 @@
                 <input type="text" id="sk-listing-search" class="form-control" placeholder="Search subjects..." />
             </div>
         </div>
-        <div class="row g-4">
+        <div class="sk-card-grid">
             @include('components.subject-card', ['name' => 'Biology', 'icon' => 'bi-tree', 'icon_bg' => 'bg-icon-success', 'description' => 'Cell biology, genetics, human physiology, ecology, and plant biology.', 'topics' => '12', 'mcqs' => '2,500', 'slug' => 'biology'])
             @include('components.subject-card', ['name' => 'Chemistry', 'icon' => 'bi-flask', 'icon_bg' => 'bg-icon-info', 'description' => 'Organic, inorganic, physical chemistry, periodic table, and chemical reactions.', 'topics' => '10', 'mcqs' => '2,200', 'slug' => 'chemistry'])
             @include('components.subject-card', ['name' => 'Physics', 'icon' => 'bi-atom', 'icon_bg' => 'bg-icon-navy', 'description' => 'Mechanics, electricity, magnetism, optics, thermodynamics, and modern physics.', 'topics' => '11', 'mcqs' => '2,000', 'slug' => 'physics'])

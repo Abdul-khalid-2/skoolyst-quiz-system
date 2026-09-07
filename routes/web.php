@@ -3,6 +3,8 @@
 
 use Skoolyst\Controllers\PageController;
 use Skoolyst\Controllers\DashboardController;
+use Skoolyst\Controllers\AuthController;
+use Skoolyst\Middleware\GuestMiddleware;
 
 $router->get('/', [PageController::class, 'home'])->name('home');
 
@@ -25,3 +27,9 @@ $router->get('/mock-tests/{slug}/take', [PageController::class, 'mockTestsTake']
 $router->get('/mock-tests/{slug}/result', [PageController::class, 'mockTestsResult'])->name('mock-tests.result');
 
 $router->get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+$router->get('/login', [AuthController::class, 'showLogin'], [GuestMiddleware::class])->name('login');
+$router->post('/login', [AuthController::class, 'login'], [GuestMiddleware::class]);
+$router->get('/register', [AuthController::class, 'showRegister'], [GuestMiddleware::class])->name('register');
+$router->post('/register', [AuthController::class, 'register'], [GuestMiddleware::class]);
+$router->get('/logout', [AuthController::class, 'logout'])->name('logout');

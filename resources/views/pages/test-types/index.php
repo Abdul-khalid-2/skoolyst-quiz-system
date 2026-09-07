@@ -19,7 +19,7 @@
                 <input type="text" id="sk-listing-search" class="form-control" placeholder="Search test types..." />
             </div>
         </div>
-        <div class="row g-4">
+        <div class="sk-card-grid">
             @include('components.subject-card', ['name' => 'MDCAT', 'icon' => 'bi-heart-pulse', 'icon_bg' => 'bg-icon-navy', 'description' => 'Medical and Dental College Admission Test. Comprehensive MCQs covering Biology, Chemistry, Physics, and English.', 'topics' => '4', 'mcqs' => '3,500', 'slug' => 'mdcat'])
             @include('components.subject-card', ['name' => 'ECAT', 'icon' => 'bi-cpu', 'icon_bg' => 'bg-icon-cyan', 'description' => 'Engineering College Admission Test. Practice Physics, Mathematics, Chemistry, and English MCQs.', 'topics' => '4', 'mcqs' => '2,800', 'slug' => 'ecat'])
             @include('components.subject-card', ['name' => 'School Exams', 'icon' => 'bi-backpack', 'icon_bg' => 'bg-icon-gold', 'description' => 'MCQs for school-level exams across all major subjects and grade levels. Perfect for board exam preparation.', 'topics' => '8', 'mcqs' => '5,200', 'slug' => 'school'])

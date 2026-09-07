@@ -16,8 +16,13 @@
             </ul>
             <div class="d-flex align-items-center gap-2">
                 <input type="text" class="sk-search-box d-none d-lg-inline-block" placeholder="Search MCQs..." />
-                <a href="#" class="btn btn-sk-outline btn-sm-sk">Login</a>
-                <a href="#" class="btn btn-sk-navy btn-sm-sk">Register</a>
+                @if(is_authenticated())
+                <span class="text-secondary-custom small d-none d-lg-inline">Hi, {{ auth_user()['name'] }}</span>
+                <a href="{{ route('logout') }}" class="btn btn-sk-outline btn-sm-sk">Logout</a>
+                @else
+                <a href="{{ route('login') }}" class="btn btn-sk-outline btn-sm-sk">Login</a>
+                <a href="{{ route('register') }}" class="btn btn-sk-navy btn-sm-sk">Register</a>
+                @endif
             </div>
         </div>
     </div>
