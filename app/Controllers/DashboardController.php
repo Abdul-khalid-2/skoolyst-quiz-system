@@ -6,16 +6,11 @@ namespace Skoolyst\Controllers;
 use Skoolyst\Core\Controller;
 use Skoolyst\Core\Validator;
 use Skoolyst\Models\MockTest;
-use Skoolyst\Models\TestType;
 use Skoolyst\Models\User;
 
 class DashboardController extends Controller {
     public function index(): void {
         $this->view('admin.dashboard');
-    }
-
-    public function testTypes(): void {
-        $this->view('admin.test-types', ['testTypes' => TestType::all()]);
     }
 
     public function mockTests(): void {
