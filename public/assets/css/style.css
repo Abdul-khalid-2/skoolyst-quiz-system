@@ -274,6 +274,11 @@ a:hover { color: var(--sk-navy); }
   padding: 1.5rem;
   transition: box-shadow var(--sk-transition), transform var(--sk-transition);
   height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.sk-card > .btn {
+  margin-top: auto;
 }
 .sk-card:hover {
   box-shadow: var(--sk-shadow-md);
