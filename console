@@ -1,0 +1,84 @@
+#!/usr/bin/env php
+<?php
+declare(strict_types=1);
+
+require __DIR__ . '/bootstrap/app.php';
+
+use Skoolyst\Core\Database;
+
+$root = __DIR__;
+$command = $argv[1] ?? null;
+
+function ensureMigrationsTable(PDO $pdo): void {
+    $pdo->exec("CREATE TABLE IF NOT EXISTS migrations (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        migration VARCHAR(255) NOT NULL,
+        run_at DATETIME NOT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+}
+
+function runMigrations(string $root): void {
+    $pdo = Database::connection();
+    ensureMigrationsTable($pdo);
+
+    $applied = $pdo->query('SELECT migration FROM migrations')->fetchAll(PDO::FETCH_COLUMN);
+    $files = glob($root . '/database/migrations/*.sql') ?: [];
+    sort($files);
+
+    $ran = 0;
+    foreach ($files as $file) {
+        $name = basename($file);
+        if (in_array($name, $applied, true)) continue;
+
+        $sql = trim((string) file_get_contents($file));
+        if ($sql !== '') {
+            $pdo->exec($sql);
+        }
+
+        $stmt = $pdo->prepare('INSERT INTO migrations (migration, run_at) VALUES (?, NOW())');
+        $stmt->execute([$name]);
+        echo "Migrated: {$name}\n";
+        $ran++;
+    }
+
+    echo $ran === 0 ? "Nothing to migrate.\n" : "Ran {$ran} migration(s).\n";
+}
+
+function runFreshMigrations(string $root): void {
+    $pdo = Database::connection();
+    $tables = $pdo->query('SHOW TABLES')->fetchAll(PDO::FETCH_COLUMN);
+
+    if ($tables) {
+        $pdo->exec('SET FOREIGN_KEY_CHECKS=0');
+        foreach ($tables as $table) {
+            $pdo->exec("DROP TABLE IF EXISTS `{$table}`");
+        }
+        $pdo->exec('SET FOREIGN_KEY_CHECKS=1');
+        echo 'Dropped ' . count($tables) . " table(s).\n";
+    }
+
+    runMigrations($root);
+}
+
+function runSeeders(string $root): void {
+    $pdo = Database::connection();
+    $seeder = $root . '/database/seeders/DatabaseSeeder.php';
+
+    if (!is_file($seeder)) {
+        echo "No DatabaseSeeder found at database/seeders/DatabaseSeeder.php\n";
+        return;
+    }
+
+    $callback = require $seeder;
+    if (is_callable($callback)) {
+        $callback($pdo);
+        echo "Seeding complete.\n";
+    }
+}
+
+match ($command) {
+    'migrate' => runMigrations($root),
+    'migrate:fresh' => runFreshMigrations($root),
+    'seed' => runSeeders($root),
+    default => print("Usage: php console <migrate|migrate:fresh|seed>\n"),
+};

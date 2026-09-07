@@ -1,6 +1,6 @@
 # 🎓 Skoolyst MCQs - Quiz System
 
-> A comprehensive Multiple Choice Questions (MCQ) and Quiz management platform built with **PHP MVC (Laravel-like) architecture** for schools and educational institutions.
+> A comprehensive Multiple Choice Questions (MCQ) and Quiz management platform built with a **custom Core PHP MVC architecture** (no framework, no Composer package like Laravel/Symfony) for schools and educational institutions.
 
 **Repository:** [https://github.com/Abdul-khalid-2/skoolyst-quiz-system](https://github.com/Abdul-khalid-2/skoolyst-quiz-system)
 
@@ -16,9 +16,9 @@
 - 🎨 Deliver a seamless user experience with modern UI
 
 **Technology Stack:**
-- **Backend:** PHP (Custom MVC Structure)
-- **Frontend:** Blade Templates, Bootstrap 5, Vanilla JavaScript
-- **Database:** MySQL/PostgreSQL
+- **Backend:** PHP 8.2+ (Custom MVC Structure — no framework; see [ARCHITECTURE.md](./ARCHITECTURE.md))
+- **Frontend:** Plain PHP templates (component-based, `resources/views/`), Bootstrap 5, Vanilla JavaScript
+- **Database:** MySQL (via raw PDO in `app/Core/Database.php`)
 - **Assets:** Bootstrap Icons, Tailwind CSS
 - **Tools:** Composer, Git
 
@@ -737,39 +737,89 @@ skoolyst-quiz-system/
 
 ## 🚀 Quick Start Guide
 
+> ⚠️ This is a **custom Core PHP MVC app, not Laravel** — there is no `artisan` binary. Use the steps below, not the generic Laravel workflow.
+
 ### Prerequisites
-- PHP 7.4+
-- MySQL 5.7+
+- PHP 8.2+
+- MySQL 5.7+ (e.g. via XAMPP)
 - Composer
 - Git
+- Apache with `mod_rewrite` enabled (XAMPP ships this already), or any web server that can point its document root at `public/`
 
 ### Installation
 
+This project is meant to be placed directly under your web server's document root (e.g. XAMPP's `htdocs/`), not run with a framework CLI server.
+
 ```bash
-# Clone repository
+# 1. Clone (or place the project) inside htdocs
 git clone https://github.com/Abdul-khalid-2/skoolyst-quiz-system.git
 cd skoolyst-quiz-system
 
-# Install dependencies
+# 2. Install dependencies
 composer install
 
-# Copy environment file
+# 3. Copy the environment file
 cp .env.example .env
-
-# Generate application key
-php artisan key:generate
-
-# Run migrations
-php artisan migrate
-
-# Seed database (with sample data)
-php artisan db:seed
-
-# Start development server
-php artisan serve
 ```
 
-Visit `http://localhost:8000` in your browser.
+Then edit `.env` and set at least:
+
+```
+APP_URL=http://localhost/<path-to-project>/public
+DB_DATABASE=<a database name of your choice>
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+```bash
+# 4. Create the database (there is no `artisan key:generate` step — this app has no app key)
+#    Easiest via phpMyAdmin: create a new database matching DB_DATABASE in .env.
+#    Or from the command line:
+mysql -u root -e "CREATE DATABASE IF NOT EXISTS <your_db_name> CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+# 5. Run migrations
+php console migrate
+
+# 6. Seed the database (optional, once seeders exist)
+php console seed
+
+# 7. Start Apache (and MySQL) from the XAMPP Control Panel — no dev server command needed
+```
+
+Visit the app at whatever `APP_URL` you set, e.g.:
+
+```
+http://localhost/<path-to-project>/public/
+```
+
+### Migrations & Seeders
+
+There is no `artisan`. Instead, this repo ships a small `console` script (`php console <command>`) that talks directly to the PDO connection in `app/Core/Database.php`:
+
+| Command | What it does |
+|---|---|
+| `php console migrate` | Runs any `.sql` files in `database/migrations/` that haven't been applied yet, tracked in a `migrations` table it creates automatically. |
+| `php console migrate:fresh` | Drops every table in the configured database, then re-runs all migrations from scratch. **Destructive** — only use in local dev. |
+| `php console seed` | Requires `database/seeders/DatabaseSeeder.php` (must return a `function (PDO $pdo): void { ... }`) and runs it. |
+
+**Adding a migration:** drop a new `.sql` file into `database/migrations/`, named so it sorts in the order it should run, e.g.:
+
+```
+database/migrations/2026_09_07_000001_create_users_table.sql
+```
+
+Each file's raw SQL (`CREATE TABLE`, etc.) is executed once and recorded by filename — never edit an already-applied migration file, add a new one instead.
+
+**Adding a seeder:** create a file like `database/seeders/UserSeeder.php` that returns a `function (PDO $pdo): void { ... }`, then call it from `database/seeders/DatabaseSeeder.php`:
+
+```php
+// database/seeders/DatabaseSeeder.php
+return function (PDO $pdo): void {
+    (require __DIR__ . '/UserSeeder.php')($pdo);
+};
+```
+
+> **Current state:** `database/migrations/` and `database/seeders/` are currently empty placeholders — no schema or seed data has been defined yet (see Phase 2 below). `database/sql/module_database.sql` is also just a stub, not a real dump.
 
 ---
 
