@@ -1,9 +1,13 @@
 <?php
 declare(strict_types=1);
 
-// Root seeder: orchestrates all other seeders. Add a require + call for each
-// new seeder file placed in this directory, in the order they should run.
+// Root seeder: orchestrates all other seeders, in dependency order.
 return function (PDO $pdo): void {
-    // Example:
-    // (require __DIR__ . '/UserSeeder.php')($pdo);
+    (require __DIR__ . '/UserSeeder.php')($pdo);
+    (require __DIR__ . '/SubjectSeeder.php')($pdo);
+    (require __DIR__ . '/TestTypeSeeder.php')($pdo);
+    (require __DIR__ . '/SubjectTestTypeSeeder.php')($pdo);
+    (require __DIR__ . '/TopicSeeder.php')($pdo);
+    (require __DIR__ . '/McqSeeder.php')($pdo);
+    (require __DIR__ . '/MockTestSeeder.php')($pdo);
 };
