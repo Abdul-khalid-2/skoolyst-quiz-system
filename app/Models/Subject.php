@@ -7,16 +7,16 @@ use Skoolyst\Core\Database;
 use Skoolyst\Core\Model;
 
 class Subject extends Model {
-    protected string $table = 'subjects';
+    protected string $table = 'mcq_subjects';
     protected array $fillable = ['name', 'slug', 'description', 'icon', 'icon_bg'];
 
     public static function all(): array {
         return Database::connection()
-            ->query('SELECT * FROM subjects ORDER BY name ASC')
+            ->query('SELECT * FROM mcq_subjects ORDER BY name ASC')
             ->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     public static function count(): int {
-        return (int) Database::connection()->query('SELECT COUNT(*) FROM subjects')->fetchColumn();
+        return (int) Database::connection()->query('SELECT COUNT(*) FROM mcq_subjects')->fetchColumn();
     }
 }

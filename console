@@ -10,7 +10,7 @@ $root = __DIR__;
 $command = $argv[1] ?? null;
 
 function ensureMigrationsTable(PDO $pdo): void {
-    $pdo->exec("CREATE TABLE IF NOT EXISTS migrations (
+    $pdo->exec("CREATE TABLE IF NOT EXISTS mcq_migrations (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         migration VARCHAR(255) NOT NULL,
         run_at DATETIME NOT NULL
@@ -21,7 +21,7 @@ function runMigrations(string $root): void {
     $pdo = Database::connection();
     ensureMigrationsTable($pdo);
 
-    $applied = $pdo->query('SELECT migration FROM migrations')->fetchAll(PDO::FETCH_COLUMN);
+    $applied = $pdo->query('SELECT migration FROM mcq_migrations')->fetchAll(PDO::FETCH_COLUMN);
     $files = glob($root . '/database/migrations/*.sql') ?: [];
     sort($files);
 
@@ -35,7 +35,7 @@ function runMigrations(string $root): void {
             $pdo->exec($sql);
         }
 
-        $stmt = $pdo->prepare('INSERT INTO migrations (migration, run_at) VALUES (?, NOW())');
+        $stmt = $pdo->prepare('INSERT INTO mcq_migrations (migration, run_at) VALUES (?, NOW())');
         $stmt->execute([$name]);
         echo "Migrated: {$name}\n";
         $ran++;

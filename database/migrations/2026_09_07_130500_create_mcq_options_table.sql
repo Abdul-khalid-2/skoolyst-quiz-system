@@ -7,5 +7,5 @@ CREATE TABLE IF NOT EXISTS mcq_options (
     sort_order TINYINT UNSIGNED NOT NULL DEFAULT 0,
     UNIQUE KEY uq_mcq_options_mcq_label (mcq_id, label),
     KEY idx_mcq_options_mcq_correct (mcq_id, is_correct),
-    CONSTRAINT fk_mcq_options_mcq FOREIGN KEY (mcq_id) REFERENCES mcqs (id) ON DELETE CASCADE
+    CONSTRAINT fk_mcq_options_mcq FOREIGN KEY (mcq_id) REFERENCES mcq_questions (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
