@@ -809,6 +809,27 @@ a:hover { color: var(--sk-navy); }
   padding: 0.25rem 0.5rem;
 }
 
+/* ---------- Empty state ---------- */
+.sk-empty-state {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: var(--sk-text-secondary);
+}
+.sk-empty-state-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  background-color: var(--sk-bg-alt);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  color: var(--sk-text-muted);
+}
+.sk-empty-state h5 { color: var(--sk-text); margin-bottom: 0.35rem; }
+.sk-empty-state p { margin-bottom: 0; font-size: 0.9rem; }
+
 /* ---------- Auth ---------- */
 .sk-auth-body {
   min-height: 100vh;

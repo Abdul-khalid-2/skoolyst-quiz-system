@@ -5,6 +5,7 @@ use Skoolyst\Controllers\PageController;
 use Skoolyst\Controllers\DashboardController;
 use Skoolyst\Controllers\AuthController;
 use Skoolyst\Middleware\GuestMiddleware;
+use Skoolyst\Middleware\AuthMiddleware;
 
 $router->get('/', [PageController::class, 'home'])->name('home');
 
@@ -27,6 +28,15 @@ $router->get('/mock-tests/{slug}/take', [PageController::class, 'mockTestsTake']
 $router->get('/mock-tests/{slug}/result', [PageController::class, 'mockTestsResult'])->name('mock-tests.result');
 
 $router->get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+$router->get('/dashboard/mcqs', [DashboardController::class, 'mcqs'])->name('dashboard.mcqs');
+$router->get('/dashboard/subjects', [DashboardController::class, 'subjects'])->name('dashboard.subjects');
+$router->get('/dashboard/topics', [DashboardController::class, 'topics'])->name('dashboard.topics');
+$router->get('/dashboard/test-types', [DashboardController::class, 'testTypes'])->name('dashboard.test-types');
+$router->get('/dashboard/mock-tests', [DashboardController::class, 'mockTests'])->name('dashboard.mock-tests');
+
+$router->get('/dashboard/account', [DashboardController::class, 'account'], [AuthMiddleware::class])->name('dashboard.account');
+$router->get('/dashboard/settings', [DashboardController::class, 'settings'], [AuthMiddleware::class])->name('dashboard.settings');
+$router->post('/dashboard/settings', [DashboardController::class, 'updateSettings'], [AuthMiddleware::class]);
 
 $router->get('/login', [AuthController::class, 'showLogin'], [GuestMiddleware::class])->name('login');
 $router->post('/login', [AuthController::class, 'login'], [GuestMiddleware::class]);
