@@ -8,8 +8,15 @@
         <h2 class="mb-0">Subjects</h2>
         <p class="text-secondary-custom mb-0">Manage the subjects MCQs are organized under.</p>
     </div>
-    <button class="sk-dash-quick-btn"><i class="bi bi-plus-circle text-navy"></i> Add Subject</button>
+    <a href="{{ route('dashboard.subjects.create') }}" class="sk-dash-quick-btn text-decoration-none"><i class="bi bi-plus-circle text-navy"></i> Add Subject</a>
 </div>
+
+@if(isset($error))
+<div class="alert alert-danger py-2 small">{{ $error }}</div>
+@endif
+@if(isset($success))
+<div class="alert alert-success py-2 small">{{ $success }}</div>
+@endif
 
 @if(count($subjects) > 0)
 <div class="sk-dash-table">
@@ -20,6 +27,7 @@
                 <th>Slug</th>
                 <th>Description</th>
                 <th>Created</th>
+                <th class="text-end">Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -34,6 +42,13 @@
                 <td><code>{{ $subject['slug'] }}</code></td>
                 <td class="text-secondary-custom">{{ mb_strimwidth($subject['description'] ?? '', 0, 60, '...') }}</td>
                 <td>{{ format_date($subject['created_at']) }}</td>
+                <td class="text-end">
+                    <a href="{{ route('dashboard.subjects.edit', $subject['id']) }}" class="btn btn-sk-outline btn-sm-sk"><i class="bi bi-pencil"></i></a>
+                    <form method="POST" action="{{ route('dashboard.subjects.delete', $subject['id']) }}" class="d-inline" onsubmit="return confirm('Delete this subject? Its topics and MCQs must be removed first.');">
+                        <?= csrf_field() ?>
+                        <button type="submit" class="btn btn-sk-outline btn-sm-sk text-danger"><i class="bi bi-trash"></i></button>
+                    </form>
+                </td>
             </tr>
             @endforeach
         </tbody>

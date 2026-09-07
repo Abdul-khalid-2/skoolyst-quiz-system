@@ -37,4 +37,62 @@ class Topic extends Model {
         $topic = $stmt->fetch(\PDO::FETCH_ASSOC);
         return $topic ?: null;
     }
+
+    public static function findBySlug(int $subjectId, string $slug, ?int $excludeId = null): ?array {
+        $sql = 'SELECT * FROM mcq_topics WHERE subject_id = ? AND slug = ?';
+        $params = [$subjectId, $slug];
+        if ($excludeId !== null) {
+            $sql .= ' AND id != ?';
+            $params[] = $excludeId;
+        }
+        $stmt = Database::connection()->prepare($sql . ' LIMIT 1');
+        $stmt->execute($params);
+        $topic = $stmt->fetch(\PDO::FETCH_ASSOC);
+        return $topic ?: null;
+    }
+
+    public static function create(array $data): int {
+        $stmt = Database::connection()->prepare(
+            'INSERT INTO mcq_topics (subject_id, name, slug, description, icon, difficulty, created_at, updated_at)
+             VALUES (:subject_id, :name, :slug, :description, :icon, :difficulty, NOW(), NOW())'
+        );
+        $stmt->execute([
+            'subject_id' => $data['subject_id'],
+            'name' => $data['name'],
+            'slug' => $data['slug'],
+            'description' => $data['description'] !== '' ? $data['description'] : null,
+            'icon' => $data['icon'] !== '' ? $data['icon'] : null,
+            'difficulty' => $data['difficulty'],
+        ]);
+        return (int) Database::connection()->lastInsertId();
+    }
+
+    public static function update(int $id, array $data): void {
+        $stmt = Database::connection()->prepare(
+            'UPDATE mcq_topics
+             SET subject_id = :subject_id, name = :name, slug = :slug, description = :description,
+                 icon = :icon, difficulty = :difficulty, updated_at = NOW()
+             WHERE id = :id'
+        );
+        $stmt->execute([
+            'subject_id' => $data['subject_id'],
+            'name' => $data['name'],
+            'slug' => $data['slug'],
+            'description' => $data['description'] !== '' ? $data['description'] : null,
+            'icon' => $data['icon'] !== '' ? $data['icon'] : null,
+            'difficulty' => $data['difficulty'],
+            'id' => $id,
+        ]);
+    }
+
+    public static function delete(int $id): void {
+        $stmt = Database::connection()->prepare('DELETE FROM mcq_topics WHERE id = ?');
+        $stmt->execute([$id]);
+    }
+
+    public static function mcqCount(int $id): int {
+        $stmt = Database::connection()->prepare('SELECT COUNT(*) FROM mcq_questions WHERE topic_id = ?');
+        $stmt->execute([$id]);
+        return (int) $stmt->fetchColumn();
+    }
 }
