@@ -8,8 +8,15 @@
         <h2 class="mb-0">Mock Tests</h2>
         <p class="text-secondary-custom mb-0">Manage full-length timed mock tests.</p>
     </div>
-    <button class="sk-dash-quick-btn"><i class="bi bi-clipboard2-plus text-gold"></i> Create Mock Test</button>
+    <a href="{{ route('dashboard.mock-tests.create') }}" class="sk-dash-quick-btn text-decoration-none"><i class="bi bi-clipboard2-plus text-gold"></i> Create Mock Test</a>
 </div>
+
+@if(isset($error))
+<div class="alert alert-danger py-2 small">{{ $error }}</div>
+@endif
+@if(isset($success))
+<div class="alert alert-success py-2 small">{{ $success }}</div>
+@endif
 
 @if(count($mockTests) > 0)
 <div class="sk-dash-table">
@@ -22,6 +29,7 @@
                 <th>Duration</th>
                 <th>Difficulty</th>
                 <th>Featured</th>
+                <th class="text-end">Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -33,6 +41,13 @@
                 <td>{{ $mockTest['duration_minutes'] }} min</td>
                 <td><span class="sk-badge sk-badge-{{ $mockTest['difficulty'] }}">{{ ucfirst($mockTest['difficulty']) }}</span></td>
                 <td><?= ((int) $mockTest['is_featured'] === 1) ? '<span class="sk-badge sk-badge-gold"><i class="bi bi-star-fill"></i> Featured</span>' : '<span class="text-secondary-custom">&mdash;</span>' ?></td>
+                <td class="text-end">
+                    <a href="{{ route('dashboard.mock-tests.edit', $mockTest['id']) }}" class="btn btn-sk-outline btn-sm-sk"><i class="bi bi-pencil"></i></a>
+                    <form method="POST" action="{{ route('dashboard.mock-tests.delete', $mockTest['id']) }}" class="d-inline" onsubmit="return confirm('Delete this mock test?');">
+                        <?= csrf_field() ?>
+                        <button type="submit" class="btn btn-sk-outline btn-sm-sk text-danger"><i class="bi bi-trash"></i></button>
+                    </form>
+                </td>
             </tr>
             @endforeach
         </tbody>
