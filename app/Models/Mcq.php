@@ -80,20 +80,6 @@ class Mcq extends Model {
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public static function sampleForSubject(int $subjectId): ?array {
-        $stmt = Database::connection()->prepare(
-            'SELECT q.*, t.name AS topic_name
-             FROM mcq_questions q
-             LEFT JOIN mcq_topics t ON t.id = q.topic_id
-             WHERE q.subject_id = ?
-             ORDER BY q.created_at ASC
-             LIMIT 1'
-        );
-        $stmt->execute([$subjectId]);
-        $mcq = $stmt->fetch(\PDO::FETCH_ASSOC);
-        return $mcq ?: null;
-    }
-
     public static function getOptions(int $mcqId): array {
         $stmt = Database::connection()->prepare('SELECT * FROM mcq_options WHERE mcq_id = ? ORDER BY sort_order ASC');
         $stmt->execute([$mcqId]);

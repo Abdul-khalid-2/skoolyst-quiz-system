@@ -50,10 +50,6 @@ class PageController extends Controller {
         ]);
     }
 
-    public function subjectsResult(string $slug): void {
-        $this->view('pages.subjects.result', ['slug' => $slug]);
-    }
-
     public function testTypesIndex(): void {
         $this->view('pages.test-types.index', ['testTypes' => TestType::allWithCounts()]);
     }
@@ -85,16 +81,12 @@ class PageController extends Controller {
             return;
         }
 
-        $sample = Mcq::sampleForSubject((int) $subject['id']);
-
         $this->view('pages.subject-test', [
             'testType' => $testType,
             'subject' => $subject,
             'topics' => Topic::forSubject((int) $subject['id']),
             'difficulty' => Subject::difficultyBreakdown((int) $subject['id']),
             'mcqCount' => Subject::mcqCount((int) $subject['id']),
-            'sample' => $sample,
-            'sampleOptions' => $sample !== null ? Mcq::getOptions((int) $sample['id']) : [],
         ]);
     }
 

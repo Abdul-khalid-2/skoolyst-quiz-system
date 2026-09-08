@@ -16,7 +16,6 @@ $router->get('/', [PageController::class, 'home'])->name('home');
 
 $router->get('/subjects', [PageController::class, 'subjectsIndex'])->name('subjects.index');
 $router->get('/subjects/{slug}', [PageController::class, 'subjectsShow'])->name('subjects.show');
-$router->get('/subjects/{slug}/result', [PageController::class, 'subjectsResult'])->name('subjects.result');
 
 $router->get('/test-types', [PageController::class, 'testTypesIndex'])->name('test-types.index');
 $router->get('/test-types/{slug}', [PageController::class, 'testTypesShow'])->name('test-types.show');
