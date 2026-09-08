@@ -98,4 +98,64 @@ class TestType extends Model {
         $stmt->execute([$id]);
         return (int) $stmt->fetchColumn();
     }
+
+    public static function relatedSubjects(int $id): array {
+        $stmt = Database::connection()->prepare(
+            'SELECT s.*, COUNT(DISTINCT q.id) AS mcq_count
+             FROM mcq_subjects s
+             JOIN mcq_subject_test_type stt ON stt.subject_id = s.id
+             LEFT JOIN mcq_questions q ON q.subject_id = s.id
+             WHERE stt.test_type_id = ?
+             GROUP BY s.id
+             ORDER BY mcq_count DESC, s.name ASC'
+        );
+        $stmt->execute([$id]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public static function popularTopics(int $id, int $limit = 6): array {
+        $stmt = Database::connection()->prepare(
+            'SELECT t.*, s.name AS subject_name, COUNT(q.id) AS mcq_count
+             FROM mcq_topics t
+             JOIN mcq_subjects s ON s.id = t.subject_id
+             JOIN mcq_subject_test_type stt ON stt.subject_id = s.id
+             LEFT JOIN mcq_questions q ON q.topic_id = t.id
+             WHERE stt.test_type_id = ?
+             GROUP BY t.id
+             ORDER BY mcq_count DESC, t.name ASC
+             LIMIT ' . (int) $limit
+        );
+        $stmt->execute([$id]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public static function mcqCount(int $id): int {
+        $stmt = Database::connection()->prepare(
+            'SELECT COUNT(DISTINCT q.id)
+             FROM mcq_questions q
+             JOIN mcq_subject_test_type stt ON stt.subject_id = q.subject_id
+             WHERE stt.test_type_id = ?'
+        );
+        $stmt->execute([$id]);
+        return (int) $stmt->fetchColumn();
+    }
+
+    public static function topicCount(int $id): int {
+        $stmt = Database::connection()->prepare(
+            'SELECT COUNT(DISTINCT t.id)
+             FROM mcq_topics t
+             JOIN mcq_subject_test_type stt ON stt.subject_id = t.subject_id
+             WHERE stt.test_type_id = ?'
+        );
+        $stmt->execute([$id]);
+        return (int) $stmt->fetchColumn();
+    }
+
+    public static function isLinkedToSubject(int $testTypeId, int $subjectId): bool {
+        $stmt = Database::connection()->prepare(
+            'SELECT 1 FROM mcq_subject_test_type WHERE test_type_id = ? AND subject_id = ? LIMIT 1'
+        );
+        $stmt->execute([$testTypeId, $subjectId]);
+        return (bool) $stmt->fetchColumn();
+    }
 }

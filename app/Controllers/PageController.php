@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace Skoolyst\Controllers;
 
 use Skoolyst\Core\Controller;
-use Skoolyst\Core\Response;
 use Skoolyst\Core\View;
 use Skoolyst\Models\Mcq;
 use Skoolyst\Models\Subject;
@@ -36,8 +35,7 @@ class PageController extends Controller {
         $subject = Subject::findBySlug($slug);
 
         if ($subject === null) {
-            http_response_code(404);
-            View::render('errors.404');
+            $this->notFound();
             return;
         }
 
@@ -57,15 +55,47 @@ class PageController extends Controller {
     }
 
     public function testTypesIndex(): void {
-        $this->view('pages.test-types.index');
+        $this->view('pages.test-types.index', ['testTypes' => TestType::allWithCounts()]);
     }
 
     public function testTypesShow(string $slug): void {
-        $this->view('pages.test-types.show', ['slug' => $slug]);
+        $testType = TestType::findBySlug($slug);
+
+        if ($testType === null) {
+            $this->notFound();
+            return;
+        }
+
+        $this->view('pages.test-types.show', [
+            'testType' => $testType,
+            'relatedSubjects' => TestType::relatedSubjects((int) $testType['id']),
+            'popularTopics' => TestType::popularTopics((int) $testType['id']),
+            'mcqCount' => TestType::mcqCount((int) $testType['id']),
+            'topicCount' => TestType::topicCount((int) $testType['id']),
+            'mockTestCount' => TestType::mockTestCount((int) $testType['id']),
+        ]);
     }
 
-    public function testTypeSubject(string $testType, string $subject): void {
-        $this->view('pages.subject-test', ['testType' => $testType, 'subject' => $subject]);
+    public function testTypeSubject(string $testTypeSlug, string $subjectSlug): void {
+        $testType = TestType::findBySlug($testTypeSlug);
+        $subject = Subject::findBySlug($subjectSlug);
+
+        if ($testType === null || $subject === null || !TestType::isLinkedToSubject((int) $testType['id'], (int) $subject['id'])) {
+            $this->notFound();
+            return;
+        }
+
+        $sample = Mcq::sampleForSubject((int) $subject['id']);
+
+        $this->view('pages.subject-test', [
+            'testType' => $testType,
+            'subject' => $subject,
+            'topics' => Topic::forSubject((int) $subject['id']),
+            'difficulty' => Subject::difficultyBreakdown((int) $subject['id']),
+            'mcqCount' => Subject::mcqCount((int) $subject['id']),
+            'sample' => $sample,
+            'sampleOptions' => $sample !== null ? Mcq::getOptions((int) $sample['id']) : [],
+        ]);
     }
 
     public function topicsShow(string $slug): void {
@@ -94,5 +124,10 @@ class PageController extends Controller {
 
     public function mockTestsResult(string $slug): void {
         $this->view('pages.mock-tests.result', ['slug' => $slug]);
+    }
+
+    private function notFound(): void {
+        http_response_code(404);
+        View::render('errors.404');
     }
 }

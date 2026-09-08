@@ -6,5 +6,5 @@
         <span><i class="bi bi-list-ul"></i> {{ $topics }} Topics</span>
         <span><i class="bi bi-collection"></i> {{ $mcqs }} MCQs</span>
     </div>
-    <a href="{{ route('subjects.show', $slug) }}" class="btn btn-sk-outline btn-sm-sk w-100">Explore <i class="bi bi-arrow-right ms-1"></i></a>
+    <a href="{{ route($route ?? 'subjects.show', $slug) }}" class="btn btn-sk-outline btn-sm-sk w-100">Explore <i class="bi bi-arrow-right ms-1"></i></a>
 </div>
