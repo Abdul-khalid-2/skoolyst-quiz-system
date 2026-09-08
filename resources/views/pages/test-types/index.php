@@ -30,6 +30,7 @@
                 'topics' => $testType['subject_count'],
                 'mcqs' => $testType['mcq_count'],
                 'slug' => $testType['slug'],
+                'route' => 'test-types.show',
             ])
             @endforeach
         </div>
