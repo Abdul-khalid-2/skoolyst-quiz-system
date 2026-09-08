@@ -5,11 +5,24 @@ namespace Skoolyst\Controllers;
 
 use Skoolyst\Core\Controller;
 use Skoolyst\Core\Validator;
+use Skoolyst\Models\Mcq;
+use Skoolyst\Models\MockTest;
+use Skoolyst\Models\Subject;
+use Skoolyst\Models\Topic;
 use Skoolyst\Models\User;
 
 class DashboardController extends Controller {
     public function index(): void {
-        $this->view('admin.dashboard');
+        $this->view('admin.dashboard', [
+            'stats' => [
+                'mcqs' => Mcq::count(),
+                'subjects' => Subject::count(),
+                'topics' => Topic::count(),
+                'mockTests' => MockTest::count(),
+            ],
+            'recentMcqs' => Mcq::all(6),
+            'recentMockTests' => array_slice(MockTest::all(), 0, 4),
+        ]);
     }
 
     public function account(): void {
