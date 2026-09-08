@@ -93,14 +93,50 @@
 
     <div class="col-12">
         <label class="sk-auth-label">Questions <span class="text-secondary-custom fw-normal">(select MCQs to include in this mock test)</span></label>
+
+        <?php $mcqSubjectNames = []; foreach ($mcqs as $mcq) { $mcqSubjectNames[$mcq['subject_name']] = true; } $mcqSubjectNames = array_keys($mcqSubjectNames); sort($mcqSubjectNames); ?>
+
+        @if(count($mcqs) > 0)
+        <div class="row g-2 mb-2">
+            <div class="col-md-6">
+                <input type="text" class="form-control form-control-sm" id="mcq-filter-search" placeholder="Search question text...">
+            </div>
+            <div class="col-md-3">
+                <select class="form-select form-select-sm" id="mcq-filter-subject">
+                    <option value="">All subjects</option>
+                    @foreach($mcqSubjectNames as $subjectName)
+                    <option value="{{ $subjectName }}">{{ $subjectName }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select form-select-sm" id="mcq-filter-difficulty">
+                    <option value="">All difficulties</option>
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <small class="text-secondary-custom" id="mcq-filter-count"></small>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-sk-outline btn-sm-sk" id="mcq-select-visible">Select all shown</button>
+                <button type="button" class="btn btn-sk-outline btn-sm-sk" id="mcq-clear-visible">Clear all shown</button>
+            </div>
+        </div>
+        @endif
+
         <div class="sk-info-box" style="max-height:320px;overflow-y:auto;">
             @if(count($mcqs) > 0)
             @foreach($mcqs as $mcq)
-            <div class="form-check mb-2">
+            <div class="form-check mb-2 mcq-row" data-subject="<?= htmlspecialchars($mcq['subject_name']) ?>" data-difficulty="{{ $mcq['difficulty'] }}" data-search="<?= htmlspecialchars(strtolower($mcq['question_text'])) ?>">
                 <input class="form-check-input" type="checkbox" name="mcq_ids[]" id="mcq_{{ $mcq['id'] }}" value="{{ $mcq['id'] }}" <?= in_array((int) $mcq['id'], $selectedIds, true) ? 'checked' : '' ?>>
                 <label class="form-check-label" for="mcq_{{ $mcq['id'] }}">
                     {{ mb_strimwidth($mcq['question_text'], 0, 80, '...') }}
                     <span class="text-secondary-custom small">(<?= htmlspecialchars($mcq['subject_name']) ?><?= $mcq['topic_name'] ? ' — ' . htmlspecialchars($mcq['topic_name']) : '' ?>)</span>
+                    <span class="sk-badge sk-badge-{{ $mcq['difficulty'] }} ms-1">{{ ucfirst($mcq['difficulty']) }}</span>
                 </label>
             </div>
             @endforeach
@@ -108,5 +144,58 @@
             <p class="text-secondary-custom mb-0 small">No MCQs exist yet. Add some first, then come back here to include them in this mock test.</p>
             @endif
         </div>
+        <div id="mcq-no-results" class="text-secondary-custom small mt-2" hidden>No questions match your filters.</div>
     </div>
 </div>
+
+<script>
+(function () {
+    var search = document.getElementById('mcq-filter-search');
+    var subjectFilter = document.getElementById('mcq-filter-subject');
+    var difficultyFilter = document.getElementById('mcq-filter-difficulty');
+    var rows = Array.prototype.slice.call(document.querySelectorAll('.mcq-row'));
+    var countLabel = document.getElementById('mcq-filter-count');
+    var noResults = document.getElementById('mcq-no-results');
+    var selectVisibleBtn = document.getElementById('mcq-select-visible');
+    var clearVisibleBtn = document.getElementById('mcq-clear-visible');
+
+    if (!rows.length || !search) return;
+
+    function applyFilters() {
+        var term = (search.value || '').toLowerCase().trim();
+        var subject = subjectFilter.value;
+        var difficulty = difficultyFilter.value;
+        var visibleCount = 0;
+
+        rows.forEach(function (row) {
+            var matchesSearch = !term || row.getAttribute('data-search').indexOf(term) !== -1;
+            var matchesSubject = !subject || row.getAttribute('data-subject') === subject;
+            var matchesDifficulty = !difficulty || row.getAttribute('data-difficulty') === difficulty;
+            var show = matchesSearch && matchesSubject && matchesDifficulty;
+            row.hidden = !show;
+            if (show) visibleCount++;
+        });
+
+        countLabel.textContent = visibleCount + ' of ' + rows.length + ' questions shown';
+        noResults.hidden = visibleCount !== 0;
+    }
+
+    function setVisibleChecked(checked) {
+        rows.forEach(function (row) {
+            if (!row.hidden) {
+                var checkbox = row.querySelector('input[type=checkbox]');
+                if (checkbox) checkbox.checked = checked;
+            }
+        });
+    }
+
+    search.addEventListener('input', applyFilters);
+    subjectFilter.addEventListener('change', applyFilters);
+    difficultyFilter.addEventListener('change', applyFilters);
+    selectVisibleBtn.addEventListener('click', function () { setVisibleChecked(true); });
+    clearVisibleBtn.addEventListener('click', function () { setVisibleChecked(false); });
+
+    applyFilters();
+})();
+</script>
+

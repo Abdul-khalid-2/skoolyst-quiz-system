@@ -32,13 +32,12 @@ foreach (($options ?? []) as $option) {
         <select class="form-select <?= isset($errors['topic_id']) ? 'is-invalid' : '' ?>" id="topic_id" name="topic_id">
             <option value="">No specific topic</option>
             @foreach($topicsBySubject as $subjectName => $subjectTopics)
-            <optgroup label="{{ $subjectName }}">
-                @foreach($subjectTopics as $topic)
-                <option value="{{ $topic['id'] }}" <?= ((string) old('topic_id', (string) ($mcq['topic_id'] ?? '')) === (string) $topic['id']) ? 'selected' : '' ?>>{{ $topic['name'] }}</option>
-                @endforeach
-            </optgroup>
+            @foreach($subjectTopics as $topic)
+            <option value="{{ $topic['id'] }}" data-subject-id="{{ $topic['subject_id'] }}" <?= ((string) old('topic_id', (string) ($mcq['topic_id'] ?? '')) === (string) $topic['id']) ? 'selected' : '' ?>>{{ $topic['name'] }}</option>
+            @endforeach
             @endforeach
         </select>
+        <div class="form-text">Only topics for the selected subject are shown.</div>
         @if(isset($errors['topic_id']))
         <div class="invalid-feedback">{{ $errors['topic_id'] }}</div>
         @endif
@@ -91,3 +90,32 @@ foreach (($options ?? []) as $option) {
         @endforeach
     </div>
 </div>
+
+<script>
+(function () {
+    var subjectSelect = document.getElementById('subject_id');
+    var topicSelect = document.getElementById('topic_id');
+    if (!subjectSelect || !topicSelect) return;
+
+    var options = Array.prototype.slice.call(topicSelect.querySelectorAll('option[data-subject-id]'));
+
+    function filterTopics() {
+        var subjectId = subjectSelect.value;
+        var selectedStillValid = false;
+
+        options.forEach(function (option) {
+            var matches = !subjectId || option.getAttribute('data-subject-id') === subjectId;
+            option.hidden = !matches;
+            option.disabled = !matches;
+            if (matches && option.selected) selectedStillValid = true;
+        });
+
+        if (!selectedStillValid) {
+            topicSelect.value = '';
+        }
+    }
+
+    subjectSelect.addEventListener('change', filterTopics);
+    filterTopics();
+})();
+</script>
