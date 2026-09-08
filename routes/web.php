@@ -21,6 +21,7 @@ $router->get('/subjects/{slug}/result', [PageController::class, 'subjectsResult'
 $router->get('/test-types', [PageController::class, 'testTypesIndex'])->name('test-types.index');
 $router->get('/test-types/{slug}', [PageController::class, 'testTypesShow'])->name('test-types.show');
 $router->get('/test-types/{testType}/subjects/{subject}', [PageController::class, 'testTypeSubject'])->name('test-types.subject');
+$router->get('/test-types/{testType}/subjects/{subject}/topics/{topic}', [PageController::class, 'testTypeSubjectTopic'])->name('test-types.subject.topic');
 
 $router->get('/topics/{slug}', [PageController::class, 'topicsShow'])->name('topics.show');
 $router->get('/topics/{slug}/result', [PageController::class, 'topicsResult'])->name('topics.result');

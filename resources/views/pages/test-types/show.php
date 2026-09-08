@@ -66,7 +66,7 @@
         <div class="row g-3">
             @foreach($popularTopics as $topic)
             <div class="col-md-6 col-lg-4">
-                <a href="{{ route('topics.show', $topic['slug']) }}" class="sk-list-item text-decoration-none">
+                <a href="{{ route('test-types.subject.topic', [$testType['slug'], $topic['subject_slug'], $topic['slug']]) }}" class="sk-list-item text-decoration-none">
                     <div class="d-flex align-items-center gap-3">
                         <div class="sk-card-icon bg-icon-navy mb-0"><i class="bi <?= htmlspecialchars($topic['icon'] ?? 'bi-journal') ?>"></i></div>
                         <div>

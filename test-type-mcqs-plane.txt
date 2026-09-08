@@ -1,0 +1,281 @@
+========================================================================
+ TEST TYPE <-> SUBJECT <-> MCQ — PLANNING DOCUMENT (no code changes yet)
+========================================================================
+Status: DRAFT — for discussion. Nothing in this file is implemented by
+itself; it only records the current state, the open question, and the
+options, so we can decide together before touching code.
+
+
+------------------------------------------------------------------------
+1. THE PROBLEM
+------------------------------------------------------------------------
+A "Test Type" (MDCAT, ECAT, School Exams, English, General Knowledge)
+is supposed to have its own pool of MCQs. Right now that pool is NOT
+real — it's approximated.
+
+Today, "how many MCQs does MDCAT have?" is answered by:
+    all MCQs belonging to any Subject that is linked to MDCAT
+i.e. MDCAT -> (Biology, Chemistry, Physics, English) -> every MCQ in
+those subjects, regardless of whether that specific MCQ was ever
+curated for MDCAT.
+
+That means:
+  - The same Biology MCQ shows up under MDCAT, School Exams, AND any
+    other test type Biology happens to be linked to. There is no way
+    for an MCQ to belong to MDCAT but NOT School Exams if both include
+    Biology.
+  - The "X MCQs Available" number on a Test Type + Subject combo page
+    (e.g. /test-types/mdcat/subjects/biology) is really just "how many
+    Biology MCQs exist," not "how many MCQs were written for MDCAT
+    Biology specifically."
+  - The admin MCQ form (Add/Edit MCQ) only lets you pick a Subject and
+    a Topic — there is no way to say "this question is for MDCAT" at
+    all right now.
+
+This was a deliberate shortcut while the schema and admin screens were
+being built out, not an accident — but it's the thing we now need to
+decide whether to keep or replace.
+
+
+------------------------------------------------------------------------
+2. CURRENT DATABASE SCHEMA (as it exists right now)
+------------------------------------------------------------------------
+Relevant tables only (full schema has more — attempts, options, etc.):
+
+  mcq_subjects
+    id, name, slug, description, icon, icon_bg
+
+  mcq_test_types
+    id, name, slug, description, icon, badge_class
+
+  mcq_subject_test_type   (pivot — ACTIVELY USED)
+    id, subject_id, test_type_id
+    "Biology is one of the subjects covered by MDCAT."
+    This is the ONLY link between test types and content today.
+
+  mcq_topics
+    id, subject_id, name, slug, description, icon, difficulty
+    A topic belongs to exactly one subject.
+
+  mcq_questions
+    id, subject_id, topic_id (nullable), question_text, explanation,
+    difficulty
+    A question belongs to exactly one subject, and optionally one
+    topic within that subject. It has NO link to any test type.
+
+  mcq_options
+    id, mcq_id, label, option_text, is_correct, sort_order
+
+  mcq_test_type   (pivot — EXISTS IN SCHEMA, BUT EMPTY / UNUSED)
+    id, mcq_id, test_type_id
+    Was designed for exactly this problem: "this specific MCQ counts
+    toward this specific test type's question bank," independent of
+    subject. Currently has 0 rows. Nothing writes to it, nothing reads
+    from it.
+
+Current real data (from the live seed):
+    MDCAT              -> Biology, Chemistry, English, Physics
+    ECAT               -> Chemistry, English, Mathematics, Physics
+    School Exams       -> Biology, Chemistry, Computer Science,
+                           English, General Knowledge, Mathematics,
+                           Physics, Urdu
+    English            -> English
+    General Knowledge  -> General Knowledge, Islamic Studies
+
+Notice School Exams and MDCAT both include Biology, Chemistry,
+Physics, English — under the current approach, an MDCAT Biology MCQ
+and a School Exams Biology MCQ are literally the same set of rows.
+
+
+------------------------------------------------------------------------
+3. THE DECISION: two ways forward
+------------------------------------------------------------------------
+
+OPTION A — "Subject-based" (what we already have today, do nothing)
+------------------------------------------------------------------
+A Test Type is just a named bundle of Subjects. There is no such thing
+as an "MDCAT-specific" question — a question belongs to a Subject
+(and optionally a Topic), full stop. A Test Type page shows the union
+of MCQs across its linked subjects.
+
+  Pros:
+    - Already built and working end to end (Test Types list, explore
+      page, Subject+TestType combo page, homepage cards all use this
+      today).
+    - One MCQ, one place to maintain it. No duplicate content, no
+      "which test type is this really for" ambiguity for the admin.
+    - Simplest possible mental model: Subjects and Topics are the real
+      content tree; Test Types are just curated shortcuts/groupings
+      into that tree for marketing/navigation purposes (e.g. "here's
+      the MDCAT shortcut to Biology + Chemistry + Physics + English").
+    - Admin MCQ form stays exactly as-is (Subject + Topic only).
+
+  Cons:
+    - Can't have an MDCAT-only question, or a question that's
+      correct for School Exams but wrong difficulty/scope for MDCAT.
+    - "X MCQs available for MDCAT Biology" is really "X MCQs available
+      for Biology," which is a bit dishonest once the question bank
+      grows large and test-type-specific curation actually matters.
+    - If two test types share a subject, they will always show
+      identical question pools for that subject. No way to
+      differentiate.
+
+OPTION B — "Direct tagging" (start using mcq_test_type pivot)
+------------------------------------------------------------------
+Every MCQ can additionally be tagged with the specific Test Type(s) it
+belongs to (many-to-many, via the already-existing but empty
+mcq_test_type table). A question can belong to Biology > Cell Biology
+AND be tagged for both MDCAT and School Exams, or just one of them.
+
+  What this actually requires (if we choose it):
+    1. Admin MCQ form gains a new "Test Types" multi-select (same
+       pattern as the Mock Test question-picker: checkboxes, since
+       this app has no JS framework/AJAX).
+    2. Mcq model gains getTestTypeIds() / saveTestTypes() (mirrors
+       Mcq::getOptions()/saveOptions() already built for MCQ options,
+       and MockTest::getQuestionIds()/saveQuestions() already built
+       for the mock-test question picker — same shape, third time).
+    3. Every "MCQs for this test type" query changes from the current
+       subject_test_type JOIN to a mcq_test_type JOIN instead
+       (TestType::mcqCount(), TestType::popularTopics(), the combo
+       page's mcqCount/topics, etc. — everywhere this file's Section 2
+       lists as "actively used" today).
+    4. Existing seeded/admin-entered MCQs need to be backfilled with
+       test-type tags, or they'll show 0 MCQs everywhere until
+       someone tags them — a real data-entry cost, not just a code
+       change.
+    5. Decide what happens when a question has a Subject link to a
+       Test Type (via mcq_subject_test_type) but NO direct MCQ-level
+       tag yet — show it anyway (fall back to Option A behavior) or
+       hide it until explicitly tagged (strict Option B)? This needs
+       an explicit answer, not a default.
+
+  Pros:
+    - Precise, honest numbers per test type.
+    - Lets the same Subject/Topic serve multiple test types with
+      different question sets when that's actually needed later
+      (e.g. MDCAT-only high-difficulty Biology vs. easier School
+      Exams Biology).
+
+  Cons:
+    - More admin work per question (pick subject, topic, AND test
+      types every time).
+    - More to maintain: every test-type-facing query in
+      PageController/TestType model needs to change.
+    - Existing content needs a backfill pass or it goes to zero.
+    - Bigger surface area for bugs during the transition.
+
+
+------------------------------------------------------------------------
+4. RECOMMENDATION
+------------------------------------------------------------------------
+You said: "make it as simple as we can" — that points at OPTION A:
+keep Test Types as curated Subject bundles, exactly as it already
+works today. No schema change, no admin form change, no query
+rewrite. The mcq_test_type pivot table can stay in the schema
+unused/reserved for later — it costs nothing sitting empty.
+
+Suggested framing to keep in mind going forward: Subjects/Topics are
+the real content tree. Test Types are a navigation/marketing layer on
+top of it ("here's the MDCAT-shaped view into that tree"), not a
+separate content tree of their own. That's consistent with how the
+site already talks about itself (Subjects page still exists as its
+own independent listing; Test Types page is explicitly framed as
+"choose your exam type").
+
+If/when real usage shows that test-type-specific curation is actually
+needed (e.g. a Biology question is factually correct but out of scope
+for MDCAT specifically), Option B is a clean incremental add-on later
+— the pivot table is already there waiting, and the pattern (a
+checkbox multi-select + get/save pair on the model) is one we've
+already built twice (MCQ options, Mock Test question picker), so it
+won't be unfamiliar work when the time comes.
+
+>>> Open decision for you to confirm before anything changes:
+    Stick with Option A (recommended, no work needed), or start
+    moving toward Option B now? <<<
+
+
+------------------------------------------------------------------------
+5. WEBSITE STRUCTURE — TEST TYPE SCREENS (current + ideas)
+------------------------------------------------------------------------
+
+ALREADY BUILT (public, dynamic, reading real data):
+
+  /test-types                              [index]
+      Card grid, one card per Test Type. Ranked by MCQ count (not
+      alphabetical) so content-rich test types surface first. Each
+      card's "Explore" button correctly routes to /test-types/{slug}
+      (this was a bug fixed recently — cards were sharing a component
+      with Subject cards and all linking to /subjects/{slug}).
+
+  /test-types/{slug}                       [show / "explore" page]
+      - Header: name, description, icon.
+      - Stats row: Total MCQs, Subjects, Topics, Mock Tests (all
+        real counts, all derived via mcq_subject_test_type per
+        Section 2/3 above).
+      - "Related Subjects" cards -> link to the combo page below.
+      - "Popular Topics" list, ranked by MCQ count, across all
+        subjects linked to this test type.
+      - "Available Practice Sections" -> Topic-wise practice (links
+        into the combo page) / Full Mock Tests (links to
+        /mock-tests).
+      - 404s cleanly if the slug doesn't exist.
+
+  /test-types/{testType}/subjects/{subject}   [combo / drill-down page]
+      - Only valid if that Subject is actually linked to that Test
+        Type (mcq_subject_test_type) — otherwise 404s. This stops
+        nonsense URLs like /test-types/mdcat/subjects/urdu from
+        rendering fake content.
+      - Topic filter chips (real topics for that subject) + a static
+        Easy/Medium/Hard filter UI (client-side, not wired to a real
+        filter yet — see "NOT YET DYNAMIC" below).
+      - Real MCQ count, real topic list with per-topic MCQ counts.
+      - One real sample question + its real options as a preview
+        card, correct answer highlighted.
+      - Real difficulty distribution (easy/medium/hard %) for the
+        subject.
+      - Sidebar "Test Info" box + "Start Practice" CTA.
+
+ADMIN (already built, /dashboard/test-types):
+  Full CRUD — list / create / edit / delete, with a delete guard
+  (blocked if the test type still has mock tests attached, since
+  that FK cascades destructively).
+
+NOT YET DYNAMIC / STILL PLACEHOLDER (candidates for next passes):
+  - The Easy/Medium/Hard filter chips on the combo page are decorative
+    only — clicking them doesn't actually filter the topic/MCQ list
+    yet (would need either JS client-side filtering, matching the
+    pattern already used for the Mock Test question-picker filters,
+    or a real filtered query + page reload).
+  - The Topic filter chips on the combo page have the same issue —
+    listed but not wired to actually filter anything on click yet.
+  - /practice/{slug} (the actual MCQ-answering screen) is still
+    static mock content — this is where a student would actually
+    answer questions one by one. Not started.
+  - /mock-tests/{slug}/take (timed mock test flow) is still static —
+    same category of work as /practice, larger scope (timer,
+    question palette, submit/scoring).
+  - Result pages (subject result, topic result, mock test result)
+    are still static placeholders with an empty <div> where real
+    score data would go — there's no "attempt" being recorded
+    anywhere yet even though mcq_practice_attempts /
+    mcq_mock_test_attempts tables already exist in the schema.
+
+IDEAS FOR LATER (not decided, just capturing them so they're not
+lost):
+  - A "Test Type badge" on individual MCQ rows in the admin MCQs list,
+    once/if Option B is chosen, so an admin can see at a glance which
+    test types a question is tagged for.
+  - Search/filter on the Test Types index page (there's already a
+    search input in the markup, same as Subjects — not wired up).
+  - Sitemap-style "browse everything" page listing every Test Type ->
+    Subject -> Topic in one tree, useful once content grows.
+
+
+------------------------------------------------------------------------
+6. NEXT STEP
+------------------------------------------------------------------------
+This file is the discussion draft. Once you confirm Option A vs
+Option B (or a variation), we turn the relevant section into an
+actual task list and start implementing — no code changes until then.

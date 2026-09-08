@@ -115,7 +115,7 @@ class TestType extends Model {
 
     public static function popularTopics(int $id, int $limit = 6): array {
         $stmt = Database::connection()->prepare(
-            'SELECT t.*, s.name AS subject_name, COUNT(q.id) AS mcq_count
+            'SELECT t.*, s.name AS subject_name, s.slug AS subject_slug, COUNT(q.id) AS mcq_count
              FROM mcq_topics t
              JOIN mcq_subjects s ON s.id = t.subject_id
              JOIN mcq_subject_test_type stt ON stt.subject_id = s.id

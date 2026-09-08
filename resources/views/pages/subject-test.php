@@ -3,7 +3,11 @@
 @section('title', $testType['name'] . ' ' . $subject['name'] . ' - Subject + Test Type')
 
 @section('content')
-@include('components.breadcrumb', ['breadcrumbs' => [['label' => 'Test Types', 'url' => route('test-types.index')], ['label' => $testType['name'], 'url' => route('test-types.show', $testType['slug'])], ['label' => $subject['name'], 'url' => route('subjects.show', $subject['slug'])], ['label' => $testType['name'] . ' ' . $subject['name'], 'url' => '#']]])
+@include('components.breadcrumb', ['breadcrumbs' => [
+    ['label' => 'Test Types', 'url' => route('test-types.index')],
+    ['label' => $testType['name'], 'url' => route('test-types.show', $testType['slug'])],
+    ['label' => $subject['name'], 'url' => '#'],
+]])
 
 <section class="sk-page-header">
     <div class="container">
@@ -15,10 +19,8 @@
         <p>Practice {{ $subject['name'] }} MCQs specifically curated for {{ $testType['name'] }} preparation. Filter by topic and difficulty to focus your study.</p>
         <div class="d-flex gap-2 flex-wrap mt-3">
             @if(count($topics) > 0)
-            <a href="{{ route('practice.show', $topics[0]['slug']) }}" class="btn btn-sk-gold btn-lg"><i class="bi bi-play-circle-fill me-2"></i>Start Practice</a>
-            @endif
-            @if(count($topics) > 0)
-            <a href="{{ route('topics.show', $topics[0]['slug']) }}" class="btn btn-sk-outline-light btn-lg"><i class="bi bi-journal-text me-2"></i>Browse Topics</a>
+            <a href="{{ route('test-types.subject.topic', [$testType['slug'], $subject['slug'], $topics[0]['slug']]) }}" class="btn btn-sk-gold btn-lg"><i class="bi bi-play-circle-fill me-2"></i>Start Practice</a>
+            <a href="{{ route('test-types.subject.topic', [$testType['slug'], $subject['slug'], $topics[0]['slug']]) }}" class="btn btn-sk-outline-light btn-lg"><i class="bi bi-journal-text me-2"></i>Browse Topics</a>
             @endif
         </div>
     </div>
@@ -55,7 +57,7 @@
                             <p class="text-secondary-custom mb-0">Filtered by: All Topics &middot; All Difficulties</p>
                         </div>
                         @if(count($topics) > 0)
-                        <a href="{{ route('practice.show', $topics[0]['slug']) }}" class="btn btn-sk-gold btn-lg"><i class="bi bi-play-circle-fill me-2"></i>Start Practice</a>
+                        <a href="{{ route('test-types.subject.topic', [$testType['slug'], $subject['slug'], $topics[0]['slug']]) }}" class="btn btn-sk-gold btn-lg"><i class="bi bi-play-circle-fill me-2"></i>Start Practice</a>
                         @endif
                         <a href="{{ route('subjects.result', $subject['slug']) }}" class="btn btn-sk-outline btn-lg"><i class="bi bi-clipboard2-data me-2"></i>View Sample Result</a>
                     </div>
@@ -66,7 +68,7 @@
                 <div class="row g-3">
                     @foreach($topics as $topic)
                     <div class="col-md-6">
-                        <a href="{{ route('topics.show', $topic['slug']) }}" class="sk-list-item text-decoration-none">
+                        <a href="{{ route('test-types.subject.topic', [$testType['slug'], $subject['slug'], $topic['slug']]) }}" class="sk-list-item text-decoration-none">
                             <div class="d-flex align-items-center gap-3">
                                 <div class="sk-card-icon <?= htmlspecialchars($subject['icon_bg'] ?? 'bg-icon-navy') ?> mb-0"><i class="bi <?= htmlspecialchars($topic['icon'] ?? 'bi-journal') ?>"></i></div>
                                 <div>
@@ -94,9 +96,11 @@
                     @foreach($sampleOptions as $option)
                     <div class="sk-mcq-option <?= (int) $option['is_correct'] === 1 ? 'selected' : '' ?>"><span class="sk-mcq-option-letter">{{ $option['label'] }}</span><span class="sk-mcq-option-text">{{ $option['option_text'] }}</span></div>
                     @endforeach
+                    @if(count($topics) > 0)
                     <div class="mt-3">
-                        <a href="{{ route('practice.show', $topics[0]['slug'] ?? $subject['slug']) }}" class="btn btn-sk-cyan btn-sm-sk">Start Full Practice <i class="bi bi-arrow-right ms-1"></i></a>
+                        <a href="{{ route('test-types.subject.topic', [$testType['slug'], $subject['slug'], $topics[0]['slug']]) }}" class="btn btn-sk-cyan btn-sm-sk">Start Full Practice <i class="bi bi-arrow-right ms-1"></i></a>
                     </div>
+                    @endif
                 </div>
                 @endif
             </div>
@@ -125,7 +129,7 @@
                 </div>
                 @endif
                 @if(count($topics) > 0)
-                <a href="{{ route('practice.show', $topics[0]['slug']) }}" class="btn btn-sk-gold w-100 btn-lg"><i class="bi bi-play-circle-fill me-2"></i>Start Practice</a>
+                <a href="{{ route('test-types.subject.topic', [$testType['slug'], $subject['slug'], $topics[0]['slug']]) }}" class="btn btn-sk-gold w-100 btn-lg"><i class="bi bi-play-circle-fill me-2"></i>Start Practice</a>
                 @endif
             </div>
         </div>

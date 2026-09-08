@@ -105,7 +105,9 @@ class Router {
             $i = 0;
             $path = preg_replace_callback(
                 '/\{[a-zA-Z_][a-zA-Z0-9_]*\}/',
-                fn() => (string) ($params[$i++] ?? ''),
+                function () use (&$i, $params) {
+                    return (string) ($params[$i++] ?? '');
+                },
                 $path
             );
         }

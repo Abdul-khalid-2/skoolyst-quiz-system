@@ -98,6 +98,37 @@ class PageController extends Controller {
         ]);
     }
 
+    public function testTypeSubjectTopic(string $testTypeSlug, string $subjectSlug, string $topicSlug): void {
+        $testType = TestType::findBySlug($testTypeSlug);
+        $subject = Subject::findBySlug($subjectSlug);
+
+        if ($testType === null || $subject === null || !TestType::isLinkedToSubject((int) $testType['id'], (int) $subject['id'])) {
+            $this->notFound();
+            return;
+        }
+
+        $topic = Topic::findBySlug((int) $subject['id'], $topicSlug);
+
+        if ($topic === null) {
+            $this->notFound();
+            return;
+        }
+
+        $mcqs = Mcq::forTopic((int) $topic['id']);
+        $mcqOptions = [];
+        foreach ($mcqs as $mcq) {
+            $mcqOptions[$mcq['id']] = Mcq::getOptions((int) $mcq['id']);
+        }
+
+        $this->view('pages.test-types.subject-topic', [
+            'testType' => $testType,
+            'subject' => $subject,
+            'topic' => $topic,
+            'mcqs' => $mcqs,
+            'mcqOptions' => $mcqOptions,
+        ]);
+    }
+
     public function topicsShow(string $slug): void {
         $this->view('pages.topics.show', ['slug' => $slug]);
     }

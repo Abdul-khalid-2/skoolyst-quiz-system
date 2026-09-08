@@ -72,6 +72,14 @@ class Mcq extends Model {
         $stmt->execute([$id]);
     }
 
+    public static function forTopic(int $topicId): array {
+        $stmt = Database::connection()->prepare(
+            'SELECT * FROM mcq_questions WHERE topic_id = ? ORDER BY created_at ASC'
+        );
+        $stmt->execute([$topicId]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
     public static function sampleForSubject(int $subjectId): ?array {
         $stmt = Database::connection()->prepare(
             'SELECT q.*, t.name AS topic_name
