@@ -20,6 +20,23 @@ class Subject extends Model {
         return (int) Database::connection()->query('SELECT COUNT(*) FROM mcq_subjects')->fetchColumn();
     }
 
+    public static function allWithCounts(?int $limit = null): array {
+        $sql = 'SELECT s.*,
+                       COUNT(DISTINCT t.id) AS topic_count,
+                       COUNT(DISTINCT q.id) AS mcq_count
+                FROM mcq_subjects s
+                LEFT JOIN mcq_topics t ON t.subject_id = s.id
+                LEFT JOIN mcq_questions q ON q.subject_id = s.id
+                GROUP BY s.id
+                ORDER BY mcq_count DESC, topic_count DESC, s.name ASC';
+
+        if ($limit !== null) {
+            $sql .= ' LIMIT ' . (int) $limit;
+        }
+
+        return Database::connection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
     public static function find(int $id): ?array {
         $stmt = Database::connection()->prepare('SELECT * FROM mcq_subjects WHERE id = ? LIMIT 1');
         $stmt->execute([$id]);

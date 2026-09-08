@@ -20,6 +20,23 @@ class TestType extends Model {
         return (int) Database::connection()->query('SELECT COUNT(*) FROM mcq_test_types')->fetchColumn();
     }
 
+    public static function allWithCounts(?int $limit = null): array {
+        $sql = 'SELECT tt.*,
+                       COUNT(DISTINCT stt.subject_id) AS subject_count,
+                       COUNT(DISTINCT q.id) AS mcq_count
+                FROM mcq_test_types tt
+                LEFT JOIN mcq_subject_test_type stt ON stt.test_type_id = tt.id
+                LEFT JOIN mcq_questions q ON q.subject_id = stt.subject_id
+                GROUP BY tt.id
+                ORDER BY mcq_count DESC, subject_count DESC, tt.name ASC';
+
+        if ($limit !== null) {
+            $sql .= ' LIMIT ' . (int) $limit;
+        }
+
+        return Database::connection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
     public static function find(int $id): ?array {
         $stmt = Database::connection()->prepare('SELECT * FROM mcq_test_types WHERE id = ? LIMIT 1');
         $stmt->execute([$id]);

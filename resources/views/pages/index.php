@@ -40,11 +40,9 @@
                     </div>
                     <div class="mt-3 d-flex flex-wrap gap-2">
                         <span class="text-secondary-custom me-2">Popular:</span>
-                        <a href="{{ route('subjects.show', 'biology') }}" class="sk-filter-chip">Biology</a>
-                        <a href="{{ route('subjects.show', 'chemistry') }}" class="sk-filter-chip">Chemistry</a>
-                        <a href="{{ route('subjects.show', 'physics') }}" class="sk-filter-chip">Physics</a>
-                        <a href="{{ route('subjects.show', 'mathematics') }}" class="sk-filter-chip">Mathematics</a>
-                        <a href="{{ route('subjects.show', 'english') }}" class="sk-filter-chip">English</a>
+                        @foreach($popularSubjects as $subject)
+                        <a href="{{ route('subjects.show', $subject['slug']) }}" class="sk-filter-chip">{{ $subject['name'] }}</a>
+                        @endforeach
                     </div>
                 </div>
             </div>
@@ -60,10 +58,10 @@
             <p class="sk-section-subtitle">Thousands of questions across multiple subjects and test types</p>
         </div>
         <div class="row g-3">
-            <div class="col-6 col-md-3"><div class="sk-stat"><div class="sk-stat-number" data-counter="15000">0</div><div class="sk-stat-label">Total MCQs</div></div></div>
-            <div class="col-6 col-md-3"><div class="sk-stat"><div class="sk-stat-number" data-counter="12">0</div><div class="sk-stat-label">Subjects</div></div></div>
-            <div class="col-6 col-md-3"><div class="sk-stat"><div class="sk-stat-number" data-counter="85">0</div><div class="sk-stat-label">Topics</div></div></div>
-            <div class="col-6 col-md-3"><div class="sk-stat"><div class="sk-stat-number" data-counter="5">0</div><div class="sk-stat-label">Test Types</div></div></div>
+            <div class="col-6 col-md-3"><div class="sk-stat"><div class="sk-stat-number" data-counter="{{ $stats['mcqs'] }}">0</div><div class="sk-stat-label">Total MCQs</div></div></div>
+            <div class="col-6 col-md-3"><div class="sk-stat"><div class="sk-stat-number" data-counter="{{ $stats['subjects'] }}">0</div><div class="sk-stat-label">Subjects</div></div></div>
+            <div class="col-6 col-md-3"><div class="sk-stat"><div class="sk-stat-number" data-counter="{{ $stats['topics'] }}">0</div><div class="sk-stat-label">Topics</div></div></div>
+            <div class="col-6 col-md-3"><div class="sk-stat"><div class="sk-stat-number" data-counter="{{ $stats['testTypes'] }}">0</div><div class="sk-stat-label">Test Types</div></div></div>
         </div>
     </div>
 </section>
@@ -78,10 +76,19 @@
             </div>
             <a href="{{ route('test-types.index') }}" class="btn btn-sk-outline btn-sm-sk">View All <i class="bi bi-arrow-right ms-1"></i></a>
         </div>
+        <?php $testTypeIconBg = ['sk-badge-navy' => 'bg-icon-navy', 'sk-badge-cyan' => 'bg-icon-cyan', 'sk-badge-gold' => 'bg-icon-gold', 'sk-badge-light' => 'bg-icon-info']; ?>
         <div class="sk-card-grid">
-            @include('components.subject-card', ['name' => 'MDCAT', 'icon' => 'bi-heart-pulse', 'icon_bg' => 'bg-icon-navy', 'description' => 'Medical and Dental College Admission Test preparation with comprehensive MCQs.', 'topics' => '4', 'mcqs' => '3,500', 'slug' => 'mdcat'])
-            @include('components.subject-card', ['name' => 'ECAT', 'icon' => 'bi-cpu', 'icon_bg' => 'bg-icon-cyan', 'description' => 'Engineering College Admission Test practice with physics, math, and chemistry MCQs.', 'topics' => '4', 'mcqs' => '2,800', 'slug' => 'ecat'])
-            @include('components.subject-card', ['name' => 'School Exams', 'icon' => 'bi-backpack', 'icon_bg' => 'bg-icon-gold', 'description' => 'Practice MCQs for school-level exams across all major subjects and grade levels.', 'topics' => '8', 'mcqs' => '5,200', 'slug' => 'school'])
+            @foreach($testTypes as $testType)
+            @include('components.subject-card', [
+                'name' => $testType['name'],
+                'icon' => $testType['icon'] ?? 'bi-diagram-3',
+                'icon_bg' => $testTypeIconBg[$testType['badge_class'] ?? ''] ?? 'bg-icon-navy',
+                'description' => $testType['description'] ?? '',
+                'topics' => $testType['subject_count'],
+                'mcqs' => $testType['mcq_count'],
+                'slug' => $testType['slug'],
+            ])
+            @endforeach
         </div>
     </div>
 </section>
@@ -97,12 +104,17 @@
             <a href="{{ route('subjects.index') }}" class="btn btn-sk-outline btn-sm-sk">View All <i class="bi bi-arrow-right ms-1"></i></a>
         </div>
         <div class="sk-card-grid">
-            @include('components.subject-card', ['name' => 'Biology', 'icon' => 'bi-tree', 'icon_bg' => 'bg-icon-success', 'description' => 'Cell biology, genetics, human physiology, ecology, and more.', 'topics' => '12', 'mcqs' => '2,500', 'slug' => 'biology'])
-            @include('components.subject-card', ['name' => 'Chemistry', 'icon' => 'bi-flask', 'icon_bg' => 'bg-icon-info', 'description' => 'Organic, inorganic, physical chemistry, periodic table, and reactions.', 'topics' => '10', 'mcqs' => '2,200', 'slug' => 'chemistry'])
-            @include('components.subject-card', ['name' => 'Physics', 'icon' => 'bi-atom', 'icon_bg' => 'bg-icon-navy', 'description' => 'Mechanics, electricity, magnetism, optics, and modern physics.', 'topics' => '11', 'mcqs' => '2,000', 'slug' => 'physics'])
-            @include('components.subject-card', ['name' => 'Mathematics', 'icon' => 'bi-calculator', 'icon_bg' => 'bg-icon-gold', 'description' => 'Algebra, calculus, geometry, trigonometry, and statistics.', 'topics' => '9', 'mcqs' => '1,800', 'slug' => 'mathematics'])
-            @include('components.subject-card', ['name' => 'English', 'icon' => 'bi-translate', 'icon_bg' => 'bg-icon-cyan', 'description' => 'Grammar, vocabulary, comprehension, and sentence correction.', 'topics' => '8', 'mcqs' => '1,500', 'slug' => 'english'])
-            @include('components.subject-card', ['name' => 'General Knowledge', 'icon' => 'bi-globe-americas', 'icon_bg' => 'bg-icon-success', 'description' => 'World history, geography, current affairs, and Pakistan studies.', 'topics' => '7', 'mcqs' => '1,200', 'slug' => 'general-knowledge'])
+            @foreach($subjects as $subject)
+            @include('components.subject-card', [
+                'name' => $subject['name'],
+                'icon' => $subject['icon'] ?? 'bi-journal',
+                'icon_bg' => $subject['icon_bg'] ?? 'bg-icon-navy',
+                'description' => $subject['description'] ?? '',
+                'topics' => $subject['topic_count'],
+                'mcqs' => $subject['mcq_count'],
+                'slug' => $subject['slug'],
+            ])
+            @endforeach
         </div>
     </div>
 </section>
