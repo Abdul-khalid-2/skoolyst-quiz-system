@@ -95,4 +95,17 @@ class Topic extends Model {
         $stmt->execute([$id]);
         return (int) $stmt->fetchColumn();
     }
+
+    public static function forSubject(int $subjectId): array {
+        $stmt = Database::connection()->prepare(
+            'SELECT t.*, COUNT(q.id) AS mcq_count
+             FROM mcq_topics t
+             LEFT JOIN mcq_questions q ON q.topic_id = t.id
+             WHERE t.subject_id = ?
+             GROUP BY t.id
+             ORDER BY t.name ASC'
+        );
+        $stmt->execute([$subjectId]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
 }

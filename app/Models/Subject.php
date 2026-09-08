@@ -104,4 +104,41 @@ class Subject extends Model {
         $stmt->execute([$id]);
         return (int) $stmt->fetchColumn();
     }
+
+    public static function difficultyBreakdown(int $id): array {
+        $stmt = Database::connection()->prepare(
+            'SELECT difficulty, COUNT(*) AS cnt FROM mcq_questions WHERE subject_id = ? GROUP BY difficulty'
+        );
+        $stmt->execute([$id]);
+        $rows = $stmt->fetchAll(\PDO::FETCH_KEY_PAIR);
+
+        return [
+            'easy' => (int) ($rows['easy'] ?? 0),
+            'medium' => (int) ($rows['medium'] ?? 0),
+            'hard' => (int) ($rows['hard'] ?? 0),
+        ];
+    }
+
+    public static function relatedTestTypes(int $id): array {
+        $stmt = Database::connection()->prepare(
+            'SELECT tt.*
+             FROM mcq_test_types tt
+             JOIN mcq_subject_test_type stt ON stt.test_type_id = tt.id
+             WHERE stt.subject_id = ?
+             ORDER BY tt.name ASC'
+        );
+        $stmt->execute([$id]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public static function mockTestCount(int $id): int {
+        $stmt = Database::connection()->prepare(
+            'SELECT COUNT(DISTINCT mt.id)
+             FROM mcq_mock_tests mt
+             JOIN mcq_subject_test_type stt ON stt.test_type_id = mt.test_type_id
+             WHERE stt.subject_id = ?'
+        );
+        $stmt->execute([$id]);
+        return (int) $stmt->fetchColumn();
+    }
 }

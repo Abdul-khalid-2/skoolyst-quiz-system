@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace Skoolyst\Controllers;
 
 use Skoolyst\Core\Controller;
+use Skoolyst\Core\Response;
+use Skoolyst\Core\View;
 use Skoolyst\Models\Mcq;
 use Skoolyst\Models\Subject;
 use Skoolyst\Models\TestType;
@@ -27,11 +29,27 @@ class PageController extends Controller {
     }
 
     public function subjectsIndex(): void {
-        $this->view('pages.subjects.index');
+        $this->view('pages.subjects.index', ['subjects' => Subject::allWithCounts()]);
     }
 
     public function subjectsShow(string $slug): void {
-        $this->view('pages.subjects.show', ['slug' => $slug]);
+        $subject = Subject::findBySlug($slug);
+
+        if ($subject === null) {
+            http_response_code(404);
+            View::render('errors.404');
+            return;
+        }
+
+        $this->view('pages.subjects.show', [
+            'subject' => $subject,
+            'topics' => Topic::forSubject((int) $subject['id']),
+            'difficulty' => Subject::difficultyBreakdown((int) $subject['id']),
+            'relatedTestTypes' => Subject::relatedTestTypes((int) $subject['id']),
+            'mcqCount' => Subject::mcqCount((int) $subject['id']),
+            'topicCount' => Subject::topicCount((int) $subject['id']),
+            'mockTestCount' => Subject::mockTestCount((int) $subject['id']),
+        ]);
     }
 
     public function subjectsResult(string $slug): void {
