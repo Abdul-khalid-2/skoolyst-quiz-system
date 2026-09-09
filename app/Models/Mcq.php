@@ -94,6 +94,42 @@ class Mcq extends Model {
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Normalize question text for duplicate comparison: trim, collapse whitespace, lowercase.
+     */
+    public static function normalizeQuestionText(string $text): string {
+        return mb_strtolower(trim(preg_replace('/\s+/u', ' ', $text) ?? $text));
+    }
+
+    /**
+     * @return array<string, true> Set of normalized question texts already stored for this topic.
+     */
+    public static function normalizedQuestionTextsForTopic(int $topicId): array {
+        $stmt = Database::connection()->prepare('SELECT question_text FROM mcq_questions WHERE topic_id = ?');
+        $stmt->execute([$topicId]);
+
+        $normalized = [];
+        foreach ($stmt->fetchAll(\PDO::FETCH_COLUMN) as $text) {
+            $normalized[self::normalizeQuestionText((string) $text)] = true;
+        }
+        return $normalized;
+    }
+
+    /**
+     * @param array<int, array{label: string, text: string, correct: bool}> $options
+     */
+    public static function createWithOptions(int $subjectId, int $topicId, string $questionText, ?string $explanation, string $difficulty, array $options): int {
+        $id = self::create([
+            'subject_id' => $subjectId,
+            'topic_id' => $topicId,
+            'question_text' => $questionText,
+            'explanation' => $explanation ?? '',
+            'difficulty' => $difficulty,
+        ]);
+        self::saveOptions($id, $options);
+        return $id;
+    }
+
     public static function getOptions(int $mcqId): array {
         $stmt = Database::connection()->prepare('SELECT * FROM mcq_options WHERE mcq_id = ? ORDER BY sort_order ASC');
         $stmt->execute([$mcqId]);

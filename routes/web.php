@@ -73,8 +73,12 @@ $router->post('/dashboard/mock-tests/{id}/edit', [MockTestController::class, 'up
 $router->post('/dashboard/mock-tests/{id}/delete', [MockTestController::class, 'destroy'])->name('dashboard.mock-tests.delete');
 
 $router->get('/dashboard/account', [DashboardController::class, 'account'], [AuthMiddleware::class])->name('dashboard.account');
+$router->post('/dashboard/account', [DashboardController::class, 'updateAccount'], [AuthMiddleware::class]);
 $router->get('/dashboard/settings', [DashboardController::class, 'settings'], [AuthMiddleware::class])->name('dashboard.settings');
-$router->post('/dashboard/settings', [DashboardController::class, 'updateSettings'], [AuthMiddleware::class]);
+
+$router->get('/dashboard/settings/mcqs/{id}/export', [DashboardController::class, 'exportMcqTopic'], [AuthMiddleware::class])->name('dashboard.settings.mcqs.export');
+$router->post('/dashboard/settings/mcqs/import/preview', [DashboardController::class, 'importMcqPreview'], [AuthMiddleware::class])->name('dashboard.settings.mcqs.import.preview');
+$router->post('/dashboard/settings/mcqs/import/confirm', [DashboardController::class, 'importMcqConfirm'], [AuthMiddleware::class])->name('dashboard.settings.mcqs.import.confirm');
 
 $router->get('/login', [AuthController::class, 'showLogin'], [GuestMiddleware::class])->name('login');
 $router->post('/login', [AuthController::class, 'login'], [GuestMiddleware::class]);
