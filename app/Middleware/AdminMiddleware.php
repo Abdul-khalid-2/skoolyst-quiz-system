@@ -1,2 +1,18 @@
 <?php
-// Protect administrator-only routes.
+declare(strict_types=1);
+
+namespace Skoolyst\Middleware;
+
+use Skoolyst\Core\Response;
+
+class AdminMiddleware {
+    public function handle(): void {
+        if (!is_authenticated()) {
+            Response::redirect(route('login'));
+        }
+
+        if (!is_admin()) {
+            Response::redirect(route('home'));
+        }
+    }
+}
