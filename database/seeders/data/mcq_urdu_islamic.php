@@ -1,6 +1,11 @@
 <?php
 declare(strict_types=1);
 
+// AI PROMPT: Add more real, factually-correct MCQs to this list (Urdu + Islamic Studies topics
+// only — see database/seeders/TopicSeeder.php for valid 'subject'/'topic' slugs). Follow the
+// exact array shape used below: subject, topic, difficulty (easy|medium|hard), question,
+// explanation, options (4 entries: [label A-D, text, isCorrect bool], exactly one true).
+
 return [
     // ===================== URDU =====================
     ['subject' => 'urdu', 'topic' => 'urdu-grammar', 'difficulty' => 'easy', 'question' => 'اسم (Ism) in Urdu grammar refers to a:', 'explanation' => 'اسم (Ism) is the Urdu grammatical term for a noun.', 'options' => [['A', 'Verb', false], ['B', 'Noun', true], ['C', 'Adjective', false], ['D', 'Pronoun', false]]],

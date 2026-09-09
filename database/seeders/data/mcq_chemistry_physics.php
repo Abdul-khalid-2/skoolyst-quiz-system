@@ -1,6 +1,11 @@
 <?php
 declare(strict_types=1);
 
+// AI PROMPT: Add more real, factually-correct MCQs to this list (Chemistry + Physics topics
+// only — see database/seeders/TopicSeeder.php for valid 'subject'/'topic' slugs). Follow the
+// exact array shape used below: subject, topic, difficulty (easy|medium|hard), question,
+// explanation, options (4 entries: [label A-D, text, isCorrect bool], exactly one true).
+
 return [
     // ===================== CHEMISTRY =====================
     ['subject' => 'chemistry', 'topic' => 'organic-chemistry', 'difficulty' => 'easy', 'question' => 'Organic chemistry is primarily the study of compounds containing:', 'explanation' => 'Organic chemistry focuses on carbon-based compounds.', 'options' => [['A', 'Carbon', true], ['B', 'Nitrogen', false], ['C', 'Oxygen', false], ['D', 'Sulfur', false]]],

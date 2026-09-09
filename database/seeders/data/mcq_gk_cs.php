@@ -1,6 +1,11 @@
 <?php
 declare(strict_types=1);
 
+// AI PROMPT: Add more real, factually-correct MCQs to this list (General Knowledge + Computer
+// Science topics only — see database/seeders/TopicSeeder.php for valid 'subject'/'topic' slugs).
+// Follow the exact array shape used below: subject, topic, difficulty (easy|medium|hard),
+// question, explanation, options (4 entries: [label A-D, text, isCorrect bool], exactly one true).
+
 return [
     // ===================== GENERAL KNOWLEDGE =====================
     ['subject' => 'general-knowledge', 'topic' => 'geography', 'difficulty' => 'easy', 'question' => 'What is the largest continent by area?', 'explanation' => 'Asia is the largest continent by both area and population.', 'options' => [['A', 'Africa', false], ['B', 'Asia', true], ['C', 'Europe', false], ['D', 'North America', false]]],

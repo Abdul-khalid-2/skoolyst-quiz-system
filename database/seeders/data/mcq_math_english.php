@@ -1,6 +1,11 @@
 <?php
 declare(strict_types=1);
 
+// AI PROMPT: Add more real, factually-correct MCQs to this list (Mathematics + English topics
+// only — see database/seeders/TopicSeeder.php for valid 'subject'/'topic' slugs). Follow the
+// exact array shape used below: subject, topic, difficulty (easy|medium|hard), question,
+// explanation, options (4 entries: [label A-D, text, isCorrect bool], exactly one true).
+
 return [
     // ===================== MATHEMATICS =====================
     ['subject' => 'mathematics', 'topic' => 'calculus', 'difficulty' => 'easy', 'question' => 'What does the derivative of a function represent?', 'explanation' => 'The derivative gives the instantaneous rate of change, or slope, of a function.', 'options' => [['A', 'The area under the curve', false], ['B', 'The rate of change/slope', true], ['C', 'The maximum value', false], ['D', 'The average value', false]]],
