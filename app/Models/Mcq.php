@@ -137,6 +137,28 @@ class Mcq extends Model {
     }
 
     /**
+     * Batch-loads options for many MCQs in a single query, grouped by mcq_id.
+     *
+     * @param array<int, int> $mcqIds
+     * @return array<int, array<int, array<string, mixed>>>
+     */
+    public static function getOptionsForMany(array $mcqIds): array {
+        $grouped = [];
+        if (empty($mcqIds)) return $grouped;
+
+        $placeholders = implode(',', array_fill(0, count($mcqIds), '?'));
+        $stmt = Database::connection()->prepare(
+            "SELECT * FROM mcq_options WHERE mcq_id IN ($placeholders) ORDER BY mcq_id ASC, sort_order ASC"
+        );
+        $stmt->execute(array_values($mcqIds));
+
+        foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $option) {
+            $grouped[(int) $option['mcq_id']][] = $option;
+        }
+        return $grouped;
+    }
+
+    /**
      * @param array<int, array{label: string, text: string, correct: bool}> $options
      */
     public static function saveOptions(int $mcqId, array $options): void {

@@ -12,3 +12,5 @@ if (file_exists($root . '/.env')) {
 }
 
 require __DIR__ . '/helpers.php';
+
+\Skoolyst\Core\ErrorHandler::register();

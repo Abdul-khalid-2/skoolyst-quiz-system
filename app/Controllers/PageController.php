@@ -7,11 +7,44 @@ use Skoolyst\Core\Controller;
 use Skoolyst\Core\Request;
 use Skoolyst\Core\View;
 use Skoolyst\Models\Mcq;
+use Skoolyst\Models\MockTest;
 use Skoolyst\Models\Subject;
 use Skoolyst\Models\TestType;
 use Skoolyst\Models\Topic;
 
 class PageController extends Controller {
+    public function sitemap(): void {
+        $urls = [
+            ['loc' => route('home'), 'priority' => '1.0'],
+            ['loc' => route('subjects.index'), 'priority' => '0.8'],
+            ['loc' => route('test-types.index'), 'priority' => '0.8'],
+            ['loc' => route('mock-tests.index'), 'priority' => '0.8'],
+        ];
+
+        foreach (Subject::all() as $subject) {
+            $urls[] = ['loc' => route('subjects.show', $subject['slug']), 'priority' => '0.7'];
+        }
+
+        foreach (TestType::all() as $testType) {
+            $urls[] = ['loc' => route('test-types.show', $testType['slug']), 'priority' => '0.7'];
+        }
+
+        foreach (Topic::all() as $topic) {
+            $urls[] = ['loc' => route('topics.show', $topic['slug']), 'priority' => '0.6'];
+        }
+
+        foreach (MockTest::all() as $mockTest) {
+            $urls[] = ['loc' => route('mock-tests.show', $mockTest['slug']), 'priority' => '0.6'];
+        }
+
+        header('Content-Type: application/xml; charset=utf-8');
+        echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+        echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+        foreach ($urls as $url) {
+            echo '<url><loc>' . htmlspecialchars($url['loc'], ENT_QUOTES | ENT_XML1, 'UTF-8') . '</loc><priority>' . $url['priority'] . '</priority></url>' . "\n";
+        }
+        echo '</urlset>';
+    }
     public function home(): void {
         $subjects = Subject::allWithCounts();
 
@@ -224,11 +257,7 @@ class PageController extends Controller {
      * @return array<int, array<int, array<string, mixed>>>
      */
     private function optionsByMcqId(array $mcqs): array {
-        $options = [];
-        foreach ($mcqs as $mcq) {
-            $options[$mcq['id']] = Mcq::getOptions((int) $mcq['id']);
-        }
-        return $options;
+        return Mcq::getOptionsForMany(array_map(fn ($mcq) => (int) $mcq['id'], $mcqs));
     }
 
     public function mockTestsIndex(): void {

@@ -1,0 +1,18 @@
+# Defense-in-depth: blocks direct access to app internals if the web server's
+# document root is ever pointed at the project root instead of /public.
+# Production deployments should still point the document root at /public.
+
+<IfModule mod_authz_core.c>
+    <FilesMatch "^\.env|composer\.(json|lock)$">
+        Require all denied
+    </FilesMatch>
+</IfModule>
+<IfModule !mod_authz_core.c>
+    <FilesMatch "^\.env|composer\.(json|lock)$">
+        Order allow,deny
+        Deny from all
+    </FilesMatch>
+</IfModule>
+
+RewriteEngine On
+RewriteRule ^(app|bootstrap|config|database|routes|storage|tests|vendor)/ - [F,L]
