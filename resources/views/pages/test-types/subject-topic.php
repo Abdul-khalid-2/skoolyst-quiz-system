@@ -35,24 +35,14 @@
 
         @if(count($mcqs) > 0)
         <h3 class="mb-3">Questions</h3>
-        @foreach($mcqs as $mcq)
-        <div class="sk-card mb-3">
-            <div class="d-flex justify-content-between align-items-start mb-2 flex-wrap gap-2">
-                <span class="sk-badge sk-badge-navy">Q<?= $loop->iteration ?></span>
-                <span class="sk-badge sk-badge-{{ $mcq['difficulty'] }}">{{ ucfirst($mcq['difficulty']) }}</span>
-            </div>
-            <p class="fw-semibold mb-3">{{ $mcq['question_text'] }}</p>
-            @foreach($mcqOptions[$mcq['id']] as $option)
-            <div class="sk-mcq-option <?= (int) $option['is_correct'] === 1 ? 'selected' : '' ?>"><span class="sk-mcq-option-letter">{{ $option['label'] }}</span><span class="sk-mcq-option-text">{{ $option['option_text'] }}</span></div>
-            @endforeach
-            @if($mcq['explanation'])
-            <p class="text-secondary-custom small mt-2 mb-0"><i class="bi bi-lightbulb me-1"></i>{{ $mcq['explanation'] }}</p>
-            @endif
-        </div>
-        @endforeach
-        @else
-        @include('components.empty-state', ['icon' => 'bi-collection', 'title' => 'No MCQs yet', 'message' => 'Questions for this topic will show up here once added.'])
         @endif
+        @include('components.mcq-practice', [
+            'mcqs' => $mcqs,
+            'mcqOptions' => $mcqOptions,
+            'backUrl' => route('test-types.subject', [$testType['slug'], $subject['slug']]),
+            'backLabel' => 'Back to ' . $subject['name'],
+            'resultUrl' => route('topics.result', $topic['slug']),
+        ])
     </div>
 </section>
 @endsection
