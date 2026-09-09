@@ -37,6 +37,14 @@ class Subject extends Model {
         return Database::connection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    public static function search(string $term, int $limit = 5): array {
+        $stmt = Database::connection()->prepare(
+            'SELECT * FROM mcq_subjects WHERE name LIKE :term OR description LIKE :term ORDER BY name ASC LIMIT ' . (int) $limit
+        );
+        $stmt->execute(['term' => '%' . $term . '%']);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
     public static function find(int $id): ?array {
         $stmt = Database::connection()->prepare('SELECT * FROM mcq_subjects WHERE id = ? LIMIT 1');
         $stmt->execute([$id]);

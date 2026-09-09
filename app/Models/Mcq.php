@@ -28,6 +28,20 @@ class Mcq extends Model {
         return (int) Database::connection()->query('SELECT COUNT(*) FROM mcq_questions')->fetchColumn();
     }
 
+    public static function search(string $term, int $limit = 8): array {
+        $stmt = Database::connection()->prepare(
+            'SELECT q.*, s.name AS subject_name, s.slug AS subject_slug, t.name AS topic_name, t.slug AS topic_slug
+             FROM mcq_questions q
+             JOIN mcq_subjects s ON s.id = q.subject_id
+             LEFT JOIN mcq_topics t ON t.id = q.topic_id
+             WHERE q.question_text LIKE :term
+             ORDER BY q.created_at DESC
+             LIMIT ' . (int) $limit
+        );
+        $stmt->execute(['term' => '%' . $term . '%']);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
     public static function find(int $id): ?array {
         $stmt = Database::connection()->prepare('SELECT * FROM mcq_questions WHERE id = ? LIMIT 1');
         $stmt->execute([$id]);

@@ -32,18 +32,22 @@
             <div class="col-lg-8 text-center">
                 <h2 class="sk-section-title">Find MCQs to Practice</h2>
                 <p class="sk-section-subtitle">Search across thousands of MCQs by subject, topic, or keyword</p>
-                <div class="sk-info-box text-start">
-                    <div class="input-group input-group-lg">
-                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-secondary-custom"></i></span>
-                        <input type="text" class="form-control border-start-0 ps-0" placeholder="Search for MCQs, e.g. 'photosynthesis', 'calculus', 'MDCAT'..." />
-                        <button class="btn btn-sk-navy px-4" type="button">Search</button>
+
+                <form method="GET" action="{{ route('search') }}" class="sk-smart-search" data-search-api="{{ route('search.api') }}" data-search-url="{{ route('search') }}">
+                    <div class="sk-smart-search-box">
+                        <i class="bi bi-search"></i>
+                        <input type="text" name="q" class="sk-smart-search-input" placeholder="Search for MCQs, e.g. 'photosynthesis', 'calculus', 'MDCAT'..." autocomplete="off" />
+                        <button type="button" class="sk-smart-search-clear" aria-label="Clear search">&times;</button>
+                        <button type="submit" class="sk-smart-search-submit"><i class="bi bi-search d-md-none"></i><span class="d-none d-md-inline">Search</span></button>
                     </div>
-                    <div class="mt-3 d-flex flex-wrap gap-2">
-                        <span class="text-secondary-custom me-2">Popular:</span>
-                        @foreach($popularSubjects as $subject)
-                        <a href="{{ route('subjects.show', $subject['slug']) }}" class="sk-filter-chip">{{ $subject['name'] }}</a>
-                        @endforeach
-                    </div>
+                    <div class="sk-smart-search-dropdown"></div>
+                </form>
+
+                <div class="mt-3 d-flex flex-wrap gap-2 justify-content-center">
+                    <span class="text-secondary-custom me-2">Popular:</span>
+                    @foreach($popularSubjects as $subject)
+                    <a href="{{ route('subjects.show', $subject['slug']) }}" class="sk-filter-chip">{{ $subject['name'] }}</a>
+                    @endforeach
                 </div>
             </div>
         </div>
@@ -162,4 +166,8 @@
         </div>
     </div>
 </section>
+@endsection
+
+@section('extra_js')
+<script src="{{ asset('assets/js/smart-search.js') }}"></script>
 @endsection

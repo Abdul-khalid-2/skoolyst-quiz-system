@@ -14,6 +14,9 @@ use Skoolyst\Middleware\AuthMiddleware;
 
 $router->get('/', [PageController::class, 'home'])->name('home');
 
+$router->get('/search', [PageController::class, 'search'])->name('search');
+$router->get('/search/api', [PageController::class, 'searchApi'])->name('search.api');
+
 $router->get('/subjects', [PageController::class, 'subjectsIndex'])->name('subjects.index');
 $router->get('/subjects/{slug}', [PageController::class, 'subjectsShow'])->name('subjects.show');
 

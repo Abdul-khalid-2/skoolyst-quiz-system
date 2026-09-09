@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Skoolyst\Controllers;
 
 use Skoolyst\Core\Controller;
+use Skoolyst\Core\Request;
 use Skoolyst\Core\View;
 use Skoolyst\Models\Mcq;
 use Skoolyst\Models\Subject;
@@ -25,6 +26,62 @@ class PageController extends Controller {
                 'testTypes' => TestType::count(),
             ],
         ]);
+    }
+
+    public function search(): void {
+        $term = trim((string) Request::input('q', ''));
+
+        $results = [
+            'subjects' => [],
+            'topics' => [],
+            'mcqs' => [],
+        ];
+
+        if ($term !== '') {
+            $results['subjects'] = Subject::search($term, 10);
+            $results['topics'] = Topic::search($term, 10);
+            $results['mcqs'] = Mcq::search($term, 15);
+        }
+
+        $this->view('pages.search', [
+            'term' => $term,
+            'results' => $results,
+            'totalCount' => count($results['subjects']) + count($results['topics']) + count($results['mcqs']),
+        ]);
+    }
+
+    public function searchApi(): void {
+        $term = trim((string) Request::input('q', ''));
+
+        if ($term === '' || mb_strlen($term) < 2) {
+            $this->json(['subjects' => [], 'topics' => [], 'mcqs' => []]);
+        }
+
+        $subjects = array_map(fn ($s) => [
+            'type' => 'subject',
+            'title' => $s['name'],
+            'meta' => 'Subject',
+            'icon' => $s['icon'] ?? 'bi-journal',
+            'url' => route('subjects.show', $s['slug']),
+        ], Subject::search($term, 4));
+
+        $topics = array_map(fn ($t) => [
+            'type' => 'topic',
+            'title' => $t['name'],
+            'meta' => $t['subject_name'],
+            'icon' => $t['icon'] ?? 'bi-journal-text',
+            'url' => route('topics.show', $t['slug']),
+        ], Topic::search($term, 4));
+
+        $mcqs = array_map(fn ($q) => [
+            'type' => 'mcq',
+            'title' => mb_strimwidth($q['question_text'], 0, 90, '...'),
+            'meta' => $q['subject_name'] . ($q['topic_name'] ? ' · ' . $q['topic_name'] : ''),
+            'icon' => 'bi-question-circle',
+            'url' => $q['topic_slug'] ? route('practice.show', $q['topic_slug']) : route('subjects.show', $q['subject_slug']),
+        ], Mcq::search($term, 6));
+
+        $this->json(['subjects' => $subjects, 'topics' => $topics, 'mcqs' => $mcqs]);
     }
 
     public function subjectsIndex(): void {

@@ -31,6 +31,19 @@ class Topic extends Model {
         return $grouped;
     }
 
+    public static function search(string $term, int $limit = 5): array {
+        $stmt = Database::connection()->prepare(
+            'SELECT t.*, s.name AS subject_name, s.slug AS subject_slug
+             FROM mcq_topics t
+             JOIN mcq_subjects s ON s.id = t.subject_id
+             WHERE t.name LIKE :term OR t.description LIKE :term
+             ORDER BY t.name ASC
+             LIMIT ' . (int) $limit
+        );
+        $stmt->execute(['term' => '%' . $term . '%']);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
     public static function find(int $id): ?array {
         $stmt = Database::connection()->prepare('SELECT * FROM mcq_topics WHERE id = ? LIMIT 1');
         $stmt->execute([$id]);
