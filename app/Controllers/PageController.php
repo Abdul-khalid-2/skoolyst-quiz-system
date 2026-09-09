@@ -107,30 +107,71 @@ class PageController extends Controller {
         }
 
         $mcqs = Mcq::forTopic((int) $topic['id']);
-        $mcqOptions = [];
-        foreach ($mcqs as $mcq) {
-            $mcqOptions[$mcq['id']] = Mcq::getOptions((int) $mcq['id']);
-        }
 
         $this->view('pages.test-types.subject-topic', [
             'testType' => $testType,
             'subject' => $subject,
             'topic' => $topic,
             'mcqs' => $mcqs,
-            'mcqOptions' => $mcqOptions,
+            'mcqOptions' => $this->optionsByMcqId($mcqs),
         ]);
     }
 
     public function topicsShow(string $slug): void {
-        $this->view('pages.topics.show', ['slug' => $slug]);
+        $topic = Topic::findBySlugGlobal($slug);
+
+        if ($topic === null) {
+            $this->notFound();
+            return;
+        }
+
+        $mcqs = Mcq::forTopic((int) $topic['id']);
+
+        $this->view('pages.topics.show', [
+            'topic' => $topic,
+            'mcqs' => $mcqs,
+            'mcqOptions' => $this->optionsByMcqId($mcqs),
+        ]);
     }
 
     public function topicsResult(string $slug): void {
-        $this->view('pages.topics.result', ['slug' => $slug]);
+        $topic = Topic::findBySlugGlobal($slug);
+
+        if ($topic === null) {
+            $this->notFound();
+            return;
+        }
+
+        $this->view('pages.topics.result', ['topic' => $topic]);
     }
 
     public function practice(string $slug): void {
-        $this->view('pages.practice', ['slug' => $slug]);
+        $topic = Topic::findBySlugGlobal($slug);
+
+        if ($topic === null) {
+            $this->notFound();
+            return;
+        }
+
+        $mcqs = Mcq::forTopic((int) $topic['id']);
+
+        $this->view('pages.practice', [
+            'topic' => $topic,
+            'mcqs' => $mcqs,
+            'mcqOptions' => $this->optionsByMcqId($mcqs),
+        ]);
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $mcqs
+     * @return array<int, array<int, array<string, mixed>>>
+     */
+    private function optionsByMcqId(array $mcqs): array {
+        $options = [];
+        foreach ($mcqs as $mcq) {
+            $options[$mcq['id']] = Mcq::getOptions((int) $mcq['id']);
+        }
+        return $options;
     }
 
     public function mockTestsIndex(): void {

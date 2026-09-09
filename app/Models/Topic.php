@@ -96,6 +96,19 @@ class Topic extends Model {
         return (int) $stmt->fetchColumn();
     }
 
+    public static function findBySlugGlobal(string $slug): ?array {
+        $stmt = Database::connection()->prepare(
+            'SELECT t.*, s.name AS subject_name, s.slug AS subject_slug, s.icon_bg AS subject_icon_bg
+             FROM mcq_topics t
+             JOIN mcq_subjects s ON s.id = t.subject_id
+             WHERE t.slug = ?
+             LIMIT 1'
+        );
+        $stmt->execute([$slug]);
+        $topic = $stmt->fetch(\PDO::FETCH_ASSOC);
+        return $topic ?: null;
+    }
+
     public static function forSubject(int $subjectId): array {
         $stmt = Database::connection()->prepare(
             'SELECT t.*, COUNT(q.id) AS mcq_count
