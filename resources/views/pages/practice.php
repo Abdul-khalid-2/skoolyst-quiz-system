@@ -28,6 +28,7 @@
                     'backUrl' => route('topics.show', $topic['slug']),
                     'backLabel' => 'Back to Topic',
                     'resultUrl' => route('topics.result', $topic['slug']),
+                    'submitUrl' => is_authenticated() ? route('practice.submit', $topic['slug']) : null,
                 ])
             </div>
         </div>

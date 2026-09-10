@@ -9,6 +9,7 @@ use Skoolyst\Core\View;
 use Skoolyst\Models\Mcq;
 use Skoolyst\Models\MockTest;
 use Skoolyst\Models\MockTestAttempt;
+use Skoolyst\Models\PracticeAttempt;
 use Skoolyst\Models\Subject;
 use Skoolyst\Models\TestType;
 use Skoolyst\Models\Topic;
@@ -233,7 +234,24 @@ class PageController extends Controller {
             return;
         }
 
-        $this->view('pages.topics.result', ['topic' => $topic]);
+        $attempt = null;
+        $answers = [];
+        $optionsByMcq = [];
+
+        if (is_authenticated()) {
+            $attempt = PracticeAttempt::mostRecentForTopic((int) auth_user()['id'], (int) $topic['id']);
+            if ($attempt !== null) {
+                $answers = PracticeAttempt::answers((int) $attempt['id']);
+                $optionsByMcq = Mcq::getOptionsForMany(array_map(fn ($a) => (int) $a['mcq_id'], $answers));
+            }
+        }
+
+        $this->view('pages.topics.result', [
+            'topic' => $topic,
+            'attempt' => $attempt,
+            'answers' => $answers,
+            'optionsByMcq' => $optionsByMcq,
+        ]);
     }
 
     public function practice(string $slug): void {
@@ -251,6 +269,61 @@ class PageController extends Controller {
             'mcqs' => $mcqs,
             'mcqOptions' => $this->optionsByMcqId($mcqs),
         ]);
+    }
+
+    public function practiceSubmit(string $slug): void {
+        $topic = Topic::findBySlugGlobal($slug);
+
+        if ($topic === null) {
+            $this->json(['error' => 'Topic not found.'], 404);
+        }
+
+        if (!csrf_verify()) {
+            $this->json(['error' => 'Your session expired. Please reload and try again.'], 419);
+        }
+
+        $mcqs = Mcq::forTopic((int) $topic['id']);
+        if (empty($mcqs)) {
+            $this->json(['error' => 'This topic has no questions.'], 422);
+        }
+
+        $answers = json_decode((string) Request::input('answers', '{}'), true);
+        $answers = is_array($answers) ? $answers : [];
+
+        $mcqIds = array_map(fn ($m) => (int) $m['id'], $mcqs);
+        $optionsByMcq = Mcq::getOptionsForMany($mcqIds);
+
+        $correctCount = 0;
+        $answerRows = [];
+
+        foreach ($mcqIds as $mcqId) {
+            $selectedOptionId = isset($answers[$mcqId]) ? (int) $answers[$mcqId] : null;
+            $isCorrect = false;
+
+            if ($selectedOptionId !== null) {
+                foreach ($optionsByMcq[$mcqId] ?? [] as $option) {
+                    if ((int) $option['id'] === $selectedOptionId) {
+                        $isCorrect = (int) $option['is_correct'] === 1;
+                        break;
+                    }
+                }
+            }
+
+            if ($isCorrect) $correctCount++;
+            $answerRows[] = ['mcq_id' => $mcqId, 'option_id' => $selectedOptionId, 'is_correct' => $isCorrect];
+        }
+
+        $total = count($mcqIds);
+        $scorePercent = round($correctCount / $total * 100, 2);
+        $userId = (int) auth_user()['id'];
+
+        $attemptId = PracticeAttempt::record($userId, (int) $topic['subject_id'], (int) $topic['id'], $total, $correctCount, $scorePercent);
+
+        foreach ($answerRows as $row) {
+            PracticeAttempt::saveAnswer($attemptId, $row['mcq_id'], $row['option_id'], $row['is_correct']);
+        }
+
+        $this->json(['ok' => true, 'attemptId' => $attemptId]);
     }
 
     /**

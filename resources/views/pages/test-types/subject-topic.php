@@ -42,6 +42,7 @@
             'backUrl' => route('test-types.subject', [$testType['slug'], $subject['slug']]),
             'backLabel' => 'Back to ' . $subject['name'],
             'resultUrl' => route('topics.result', $topic['slug']),
+            'submitUrl' => is_authenticated() ? route('practice.submit', $topic['slug']) : null,
         ])
     </div>
 </section>

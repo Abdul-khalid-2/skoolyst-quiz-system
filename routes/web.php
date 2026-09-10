@@ -31,6 +31,7 @@ $router->get('/topics/{slug}', [PageController::class, 'topicsShow'])->name('top
 $router->get('/topics/{slug}/result', [PageController::class, 'topicsResult'])->name('topics.result');
 
 $router->get('/practice/{slug}', [PageController::class, 'practice'])->name('practice.show');
+$router->post('/practice/{slug}/submit', [PageController::class, 'practiceSubmit'], [AuthMiddleware::class])->name('practice.submit');
 
 $router->get('/mock-tests', [PageController::class, 'mockTestsIndex'])->name('mock-tests.index');
 $router->get('/mock-tests/{slug}', [PageController::class, 'mockTestsShow'])->name('mock-tests.show');

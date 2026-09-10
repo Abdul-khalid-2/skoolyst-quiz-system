@@ -1,11 +1,13 @@
 @if(count($mcqs) > 0)
 <script type="application/json" id="sk-practice-data"><?= json_encode(array_map(function ($mcq) use ($mcqOptions) {
     return [
+        'id' => (int) $mcq['id'],
         'question' => $mcq['question_text'],
         'difficulty' => $mcq['difficulty'],
         'explanation' => $mcq['explanation'],
         'options' => array_map(function ($option) {
             return [
+                'id' => (int) $option['id'],
                 'label' => $option['label'],
                 'text' => $option['option_text'],
                 'correct' => (int) $option['is_correct'] === 1,
@@ -31,6 +33,8 @@
     var backUrl = <?= json_encode($backUrl ?? null) ?>;
     var backLabel = <?= json_encode($backLabel ?? 'Back') ?>;
     var resultUrl = <?= json_encode($resultUrl ?? null) ?>;
+    var submitUrl = <?= json_encode($submitUrl ?? null) ?>;
+    var csrfToken = <?= json_encode(!empty($submitUrl) ? csrf_token() : null) ?>;
 
     var state = questions.map(function () { return { selected: null, checked: false }; });
     var currentIndex = 0;
@@ -153,6 +157,8 @@
             linksHtml += '<a href="' + resultUrl + '" class="btn btn-sk-outline btn-sm-sk"><i class="bi bi-clipboard-data me-1"></i>View Results</a>';
         }
 
+        var saveNoteHtml = submitUrl ? '<p class="small text-secondary-custom mt-3 mb-0" id="sk-practice-save-note"><i class="bi bi-cloud-arrow-up me-1"></i>Saving your result&hellip;</p>' : '';
+
         app.innerHTML =
             '<div class="sk-card text-center">' +
                 '<i class="bi bi-trophy-fill text-warning" style="font-size:2.5rem;"></i>' +
@@ -162,6 +168,7 @@
                     '<button type="button" class="btn btn-sk-gold btn-sm-sk" id="sk-practice-retake"><i class="bi bi-arrow-repeat me-1"></i>Retake Practice</button>' +
                     linksHtml +
                 '</div>' +
+                saveNoteHtml +
             '</div>';
 
         var retakeBtn = document.getElementById('sk-practice-retake');
@@ -172,6 +179,40 @@
                 updateProgress();
                 render();
             });
+        }
+
+        if (submitUrl) {
+            var answersById = {};
+            questions.forEach(function (q, i) {
+                var s = state[i];
+                if (s.checked && s.selected !== null && q.options[s.selected]) {
+                    answersById[q.id] = q.options[s.selected].id;
+                }
+            });
+
+            var body = new URLSearchParams();
+            body.set('_csrf', csrfToken);
+            body.set('answers', JSON.stringify(answersById));
+
+            fetch(submitUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json' },
+                body: body.toString(),
+            })
+                .then(function (res) { return res.json(); })
+                .then(function (json) {
+                    var note = document.getElementById('sk-practice-save-note');
+                    if (!note) return;
+                    if (json.ok) {
+                        note.innerHTML = '<i class="bi bi-cloud-check me-1"></i>Result saved.';
+                    } else {
+                        note.innerHTML = '<i class="bi bi-exclamation-circle me-1"></i>Could not save your result.';
+                    }
+                })
+                .catch(function () {
+                    var note = document.getElementById('sk-practice-save-note');
+                    if (note) note.innerHTML = '<i class="bi bi-exclamation-circle me-1"></i>Could not save your result.';
+                });
         }
     }
 
