@@ -11,6 +11,7 @@ use Skoolyst\Controllers\Admin\TestTypeController;
 use Skoolyst\Controllers\Admin\MockTestController;
 use Skoolyst\Middleware\GuestMiddleware;
 use Skoolyst\Middleware\AdminMiddleware;
+use Skoolyst\Middleware\AuthMiddleware;
 
 $router->get('/', [PageController::class, 'home'])->name('home');
 $router->get('/sitemap.xml', [PageController::class, 'sitemap'])->name('sitemap');
@@ -33,8 +34,9 @@ $router->get('/practice/{slug}', [PageController::class, 'practice'])->name('pra
 
 $router->get('/mock-tests', [PageController::class, 'mockTestsIndex'])->name('mock-tests.index');
 $router->get('/mock-tests/{slug}', [PageController::class, 'mockTestsShow'])->name('mock-tests.show');
-$router->get('/mock-tests/{slug}/take', [PageController::class, 'mockTestsTake'])->name('mock-tests.take');
-$router->get('/mock-tests/{slug}/result', [PageController::class, 'mockTestsResult'])->name('mock-tests.result');
+$router->get('/mock-tests/{slug}/take', [PageController::class, 'mockTestsTake'], [AuthMiddleware::class])->name('mock-tests.take');
+$router->post('/mock-tests/{slug}/submit', [PageController::class, 'mockTestsSubmit'], [AuthMiddleware::class])->name('mock-tests.submit');
+$router->get('/mock-tests/{slug}/result', [PageController::class, 'mockTestsResult'], [AuthMiddleware::class])->name('mock-tests.result');
 
 $router->get('/dashboard', [DashboardController::class, 'index'], [AdminMiddleware::class])->name('dashboard');
 

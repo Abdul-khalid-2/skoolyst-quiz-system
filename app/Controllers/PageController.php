@@ -8,6 +8,7 @@ use Skoolyst\Core\Request;
 use Skoolyst\Core\View;
 use Skoolyst\Models\Mcq;
 use Skoolyst\Models\MockTest;
+use Skoolyst\Models\MockTestAttempt;
 use Skoolyst\Models\Subject;
 use Skoolyst\Models\TestType;
 use Skoolyst\Models\Topic;
@@ -261,19 +262,150 @@ class PageController extends Controller {
     }
 
     public function mockTestsIndex(): void {
-        $this->view('pages.mock-tests.index');
+        $mockTests = MockTest::all();
+        $featured = null;
+        foreach ($mockTests as $mockTest) {
+            if ((int) $mockTest['is_featured'] === 1) {
+                $featured = $mockTest;
+                break;
+            }
+        }
+
+        $this->view('pages.mock-tests.index', [
+            'mockTests' => $mockTests,
+            'featured' => $featured,
+        ]);
     }
 
     public function mockTestsShow(string $slug): void {
-        $this->view('pages.mock-tests.show', ['slug' => $slug]);
+        $mockTest = MockTest::findBySlugWithTestType($slug);
+
+        if ($mockTest === null) {
+            $this->notFound();
+            return;
+        }
+
+        $this->view('pages.mock-tests.show', [
+            'mockTest' => $mockTest,
+            'subjectBreakdown' => MockTest::subjectBreakdown((int) $mockTest['id']),
+            'questionCount' => MockTest::linkedQuestionCount((int) $mockTest['id']),
+            'attemptCount' => MockTest::attemptCount((int) $mockTest['id']),
+        ]);
     }
 
     public function mockTestsTake(string $slug): void {
-        $this->view('pages.mock-tests.take', ['slug' => $slug]);
+        $mockTest = MockTest::findBySlug($slug);
+
+        if ($mockTest === null) {
+            $this->notFound();
+            return;
+        }
+
+        $questions = MockTest::questions((int) $mockTest['id']);
+
+        $this->view('pages.mock-tests.take', [
+            'mockTest' => $mockTest,
+            'questions' => $questions,
+            'options' => Mcq::getOptionsForMany(array_map(fn ($q) => (int) $q['id'], $questions)),
+        ]);
+    }
+
+    public function mockTestsSubmit(string $slug): void {
+        $mockTest = MockTest::findBySlug($slug);
+
+        if ($mockTest === null) {
+            $this->json(['error' => 'Mock test not found.'], 404);
+        }
+
+        if (!csrf_verify()) {
+            $this->json(['error' => 'Your session expired. Please reload and try again.'], 419);
+        }
+
+        $questionIds = MockTest::getQuestionIds((int) $mockTest['id']);
+        if (empty($questionIds)) {
+            $this->json(['error' => 'This mock test has no questions yet.'], 422);
+        }
+
+        $answers = json_decode((string) Request::input('answers', '{}'), true);
+        $marked = json_decode((string) Request::input('marked', '{}'), true);
+        $timeTakenSeconds = max(0, (int) Request::input('time_taken_seconds', 0));
+
+        $answers = is_array($answers) ? $answers : [];
+        $marked = is_array($marked) ? $marked : [];
+
+        $optionsByMcq = Mcq::getOptionsForMany($questionIds);
+        $negativeMarking = (bool) $mockTest['negative_marking'];
+
+        $correctCount = 0;
+        $netScore = 0.0;
+        $answerRows = [];
+
+        foreach ($questionIds as $mcqId) {
+            $selectedOptionId = isset($answers[$mcqId]) ? (int) $answers[$mcqId] : null;
+            $isMarked = !empty($marked[$mcqId]);
+            $isCorrect = false;
+
+            if ($selectedOptionId !== null) {
+                foreach ($optionsByMcq[$mcqId] ?? [] as $option) {
+                    if ((int) $option['id'] === $selectedOptionId) {
+                        $isCorrect = (int) $option['is_correct'] === 1;
+                        break;
+                    }
+                }
+            }
+
+            if ($isCorrect) {
+                $correctCount++;
+                $netScore += 1;
+            } elseif ($selectedOptionId !== null && $negativeMarking) {
+                $netScore -= 0.25;
+            }
+
+            $answerRows[] = ['mcq_id' => $mcqId, 'option_id' => $selectedOptionId, 'is_correct' => $isCorrect, 'marked' => $isMarked];
+        }
+
+        $total = count($questionIds);
+        $scorePercent = round(max(0, $netScore) / $total * 100, 2);
+        $userId = (int) auth_user()['id'];
+
+        $attemptId = MockTestAttempt::record($userId, (int) $mockTest['id'], $total, $correctCount, $scorePercent, $timeTakenSeconds);
+
+        foreach ($answerRows as $row) {
+            MockTestAttempt::saveAnswer($attemptId, $row['mcq_id'], $row['option_id'], $row['is_correct'], $row['marked']);
+        }
+
+        $this->json(['redirect' => route('mock-tests.result', $slug) . '?attempt=' . $attemptId]);
     }
 
     public function mockTestsResult(string $slug): void {
-        $this->view('pages.mock-tests.result', ['slug' => $slug]);
+        $mockTest = MockTest::findBySlug($slug);
+
+        if ($mockTest === null) {
+            $this->notFound();
+            return;
+        }
+
+        $attemptId = (int) Request::input('attempt', 0);
+        $attempt = $attemptId > 0 ? MockTestAttempt::find($attemptId) : null;
+
+        $userId = (int) (auth_user()['id'] ?? 0);
+        if ($attempt !== null && ((int) $attempt['mock_test_id'] !== (int) $mockTest['id'] || (int) $attempt['user_id'] !== $userId)) {
+            $attempt = null;
+        }
+
+        $answers = [];
+        $optionsByMcq = [];
+        if ($attempt !== null) {
+            $answers = MockTestAttempt::answers($attemptId);
+            $optionsByMcq = Mcq::getOptionsForMany(array_map(fn ($a) => (int) $a['mcq_id'], $answers));
+        }
+
+        $this->view('pages.mock-tests.result', [
+            'mockTest' => $mockTest,
+            'attempt' => $attempt,
+            'answers' => $answers,
+            'optionsByMcq' => $optionsByMcq,
+        ]);
     }
 
     private function notFound(): void {

@@ -46,6 +46,52 @@ class MockTest extends Model {
         return $mockTest ?: null;
     }
 
+    public static function findBySlugWithTestType(string $slug): ?array {
+        $stmt = Database::connection()->prepare(
+            'SELECT mcq_mock_tests.*, mcq_test_types.name AS test_type_name, mcq_test_types.slug AS test_type_slug
+             FROM mcq_mock_tests
+             JOIN mcq_test_types ON mcq_test_types.id = mcq_mock_tests.test_type_id
+             WHERE mcq_mock_tests.slug = ? LIMIT 1'
+        );
+        $stmt->execute([$slug]);
+        $mockTest = $stmt->fetch(\PDO::FETCH_ASSOC);
+        return $mockTest ?: null;
+    }
+
+    /**
+     * @return array<int, array{name: string, slug: string, question_count: int}>
+     */
+    public static function subjectBreakdown(int $mockTestId): array {
+        $stmt = Database::connection()->prepare(
+            'SELECT s.name, s.slug, COUNT(*) AS question_count
+             FROM mcq_mock_test_questions mtq
+             JOIN mcq_questions q ON q.id = mtq.mcq_id
+             JOIN mcq_subjects s ON s.id = q.subject_id
+             WHERE mtq.mock_test_id = ?
+             GROUP BY s.id, s.name, s.slug
+             ORDER BY question_count DESC'
+        );
+        $stmt->execute([$mockTestId]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Full question rows (with subject/topic names) in the order they appear in the test.
+     */
+    public static function questions(int $mockTestId): array {
+        $stmt = Database::connection()->prepare(
+            'SELECT q.*, s.name AS subject_name, t.name AS topic_name
+             FROM mcq_mock_test_questions mtq
+             JOIN mcq_questions q ON q.id = mtq.mcq_id
+             JOIN mcq_subjects s ON s.id = q.subject_id
+             LEFT JOIN mcq_topics t ON t.id = q.topic_id
+             WHERE mtq.mock_test_id = ?
+             ORDER BY mtq.sort_order ASC'
+        );
+        $stmt->execute([$mockTestId]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
     public static function create(array $data): int {
         $stmt = Database::connection()->prepare(
             'INSERT INTO mcq_mock_tests
