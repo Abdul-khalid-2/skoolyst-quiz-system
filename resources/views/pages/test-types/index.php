@@ -12,6 +12,8 @@
     </div>
 </section>
 
+@include('components.ad-slot', ['placement' => 'test_type_top'])
+
 <section class="sk-section">
     <div class="container">
         <div class="row mb-4">

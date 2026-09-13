@@ -998,3 +998,54 @@ a:hover { color: var(--sk-navy); }
 }
 .sk-smart-search-footer a { font-size: 0.88rem; font-weight: 600; color: var(--sk-navy); }
 .sk-auth-label { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.35rem; }
+
+/* Ad slot (ads.skoolyst.com) */
+.sk-ad-slot { margin: 1.5rem 0; }
+.sk-ad-card {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: var(--sk-white, #fff);
+  border: 1px solid var(--sk-border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 1px 3px rgba(10, 45, 82, .06);
+  transition: box-shadow .15s ease;
+}
+.sk-ad-card:hover { box-shadow: 0 4px 14px rgba(10, 45, 82, .1); text-decoration: none; color: inherit; }
+.sk-ad-badge {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: var(--sk-navy);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 999px;
+  line-height: 1.6;
+}
+.sk-ad-thumb { width: 72px; height: 72px; object-fit: cover; border-radius: 10px; flex-shrink: 0; }
+.sk-ad-body { min-width: 0; padding-right: 64px; }
+.sk-ad-title { font-size: 15px; font-weight: 700; color: var(--sk-navy); margin: 0 0 4px; line-height: 1.35; }
+.sk-ad-desc { font-size: 13.5px; color: var(--sk-text-secondary); margin: 0 0 8px; line-height: 1.4; }
+.sk-ad-cta {
+  display: inline-block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--sk-navy);
+  padding: 6px 14px;
+  border-radius: 8px;
+}
+.sk-ad-pixel { position: absolute; visibility: hidden; }
+
+@media (max-width: 560px) {
+  .sk-ad-body { padding-right: 0; margin-top: 4px; }
+  .sk-ad-card { flex-wrap: wrap; }
+}

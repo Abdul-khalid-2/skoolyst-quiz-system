@@ -4,6 +4,7 @@
 use Skoolyst\Controllers\PageController;
 use Skoolyst\Controllers\DashboardController;
 use Skoolyst\Controllers\AuthController;
+use Skoolyst\Controllers\AdController;
 use Skoolyst\Controllers\Admin\McqController;
 use Skoolyst\Controllers\Admin\SubjectController;
 use Skoolyst\Controllers\Admin\TopicController;
@@ -14,6 +15,9 @@ use Skoolyst\Middleware\AdminMiddleware;
 use Skoolyst\Middleware\AuthMiddleware;
 
 $router->get('/', [PageController::class, 'home'])->name('home');
+
+$router->get('/ads/click/{id}', [AdController::class, 'click'])->name('ads.click');
+$router->get('/ads/impression/{id}', [AdController::class, 'impression'])->name('ads.impression');
 $router->get('/sitemap.xml', [PageController::class, 'sitemap'])->name('sitemap');
 
 $router->get('/search', [PageController::class, 'search'])->name('search');

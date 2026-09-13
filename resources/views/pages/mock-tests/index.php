@@ -13,6 +13,8 @@
     </div>
 </section>
 
+@include('components.ad-slot', ['placement' => 'mock_test_top'])
+
 @if(count($mockTests) > 0)
 <section class="sk-section pb-2">
     <div class="container">

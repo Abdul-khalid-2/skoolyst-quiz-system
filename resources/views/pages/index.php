@@ -3,6 +3,7 @@
 @section('title', 'Home')
 
 @section('content')
+
 <!-- Hero Section -->
 <section class="sk-hero">
     <div class="container position-relative" style="z-index:2;">
@@ -25,6 +26,7 @@
     </div>
 </section>
 
+@include('components.ad-slot', ['placement' => 'home_top'])
 <!-- Search MCQs Section -->
 <section class="sk-section bg-soft">
     <div class="container">
