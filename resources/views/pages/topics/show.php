@@ -2,6 +2,39 @@
 
 @section('title', $topic['name'] . ' - Topic')
 
+@section('schema')
+<?php if (!empty($mcqs)): ?>
+<script type="application/ld+json">
+<?php
+$quizSchema = [
+    '@context'          => 'https://schema.org',
+    '@type'             => 'Quiz',
+    'name'              => $topic['name'],
+    'description'       => $topic['description'] ?? ('Practice ' . $topic['name'] . ' MCQs as part of ' . $topic['subject_name'] . '.'),
+    'url'               => htmlspecialchars(canonical_url(), ENT_QUOTES, 'UTF-8'),
+    'educationalLevel'  => ucfirst($topic['difficulty']),
+    'numberOfQuestions' => count($mcqs),
+    'about'             => [
+        '@type' => 'Thing',
+        'name'  => $topic['subject_name'],
+    ],
+    'provider' => [
+        '@type' => 'Organization',
+        'name'  => 'Skoolyst MCQs',
+        'url'   => htmlspecialchars(base_url(), ENT_QUOTES, 'UTF-8'),
+    ],
+    'hasPart' => array_values(array_map(fn($mcq) => [
+        '@type'            => 'Question',
+        'name'             => $mcq['question_text'],
+        'educationalLevel' => ucfirst($mcq['difficulty']),
+    ], $mcqs)),
+];
+echo json_encode($quizSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+?>
+</script>
+<?php endif; ?>
+@endsection
+
 @section('content')
 @include('components.breadcrumb', ['breadcrumbs' => [
     ['label' => 'Subjects', 'url' => route('subjects.index')],

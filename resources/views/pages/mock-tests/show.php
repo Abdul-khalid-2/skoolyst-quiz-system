@@ -4,7 +4,54 @@
 @section('title', $mockTest['title'] . ' - Mock Test Detail')
 @section('meta_description', $metaDescription)
 
+@section('schema')
+<?php if ($questionCount > 0): ?>
+<script type="application/ld+json">
+<?php
+$aboutItems = !empty($subjectBreakdown)
+    ? array_values(array_map(fn($s) => ['@type' => 'Thing', 'name' => $s['name']], $subjectBreakdown))
+    : [];
+
+$mockTestSchema = [
+    '@context'          => 'https://schema.org',
+    '@type'             => 'Quiz',
+    'name'              => $mockTest['title'],
+    'description'       => $metaDescription,
+    'url'               => htmlspecialchars(canonical_url(), ENT_QUOTES, 'UTF-8'),
+    'educationalLevel'  => ucfirst($mockTest['difficulty']),
+    'numberOfQuestions' => (int) $questionCount,
+    'timeRequired'      => 'PT' . (int) $mockTest['duration_minutes'] . 'M',
+    'interactivityType'    => 'active',
+    'learningResourceType' => 'quiz',
+    'provider' => [
+        '@type' => 'Organization',
+        'name'  => 'Skoolyst MCQs',
+        'url'   => htmlspecialchars(base_url(), ENT_QUOTES, 'UTF-8'),
+    ],
+    'educationalAlignment' => [
+        '@type'         => 'AlignmentObject',
+        'alignmentType' => 'educationalSubject',
+        'targetName'    => $mockTest['test_type_name'],
+    ],
+];
+
+if (!empty($aboutItems)) {
+    $mockTestSchema['about'] = count($aboutItems) === 1 ? $aboutItems[0] : $aboutItems;
+}
+
+if ((int) $mockTest['passing_score_percent'] > 0) {
+    $mockTestSchema['comment'] = 'Passing score: ' . (int) $mockTest['passing_score_percent'] . '%'
+        . ((int) $mockTest['negative_marking'] === 1 ? '. Negative marking applies (-0.25 per wrong answer).' : '.');
+}
+
+echo json_encode($mockTestSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+?>
+</script>
+<?php endif; ?>
+@endsection
+
 @section('content')
+
 @include('components.breadcrumb', ['breadcrumbs' => [['label' => 'Mock Tests', 'url' => route('mock-tests.index')], ['label' => $mockTest['title'], 'url' => '#']]])
 
 <section class="sk-page-header">
