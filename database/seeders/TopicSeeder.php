@@ -14,12 +14,14 @@ return function (PDO $pdo): void {
             ['name' => 'Microbiology', 'slug' => 'microbiology', 'icon' => 'bi-bug', 'difficulty' => 'hard'],
         ],
         'chemistry' => [
+            ['name' => 'Atomic Structure', 'slug' => 'atomic-structure', 'icon' => 'bi-magnet', 'difficulty' => 'medium'],
             ['name' => 'Organic Chemistry', 'slug' => 'organic-chemistry', 'icon' => 'bi-droplet', 'difficulty' => 'medium'],
             ['name' => 'Periodic Table', 'slug' => 'periodic-table', 'icon' => 'bi-grid-3x3', 'difficulty' => 'easy'],
             ['name' => 'Atmospheric Chemistry', 'slug' => 'atmospheric-chemistry', 'icon' => 'bi-cloud', 'difficulty' => 'medium'],
             ['name' => 'Chemical Bonding', 'slug' => 'chemical-bonding', 'icon' => 'bi-diagram-2', 'difficulty' => 'medium'],
             ['name' => 'Acids & Bases', 'slug' => 'acids-and-bases', 'icon' => 'bi-eyedropper', 'difficulty' => 'medium'],
             ['name' => 'Inorganic Chemistry', 'slug' => 'inorganic-chemistry', 'icon' => 'bi-gem', 'difficulty' => 'medium'],
+            ['name' => 'States of Matter', 'slug' => 'states-of-matter', 'icon' => 'bi-thermometer-half', 'difficulty' => 'medium'],
         ],
         'physics' => [
             ['name' => 'Electricity & Magnetism', 'slug' => 'electricity', 'icon' => 'bi-lightning-charge', 'difficulty' => 'medium'],
