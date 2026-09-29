@@ -9,6 +9,7 @@ use Skoolyst\Core\Validator;
 use Skoolyst\Models\Mcq;
 use Skoolyst\Models\MockTest;
 use Skoolyst\Models\TestType;
+use Skoolyst\Services\EmailService;
 
 class MockTestController extends Controller {
     public function index(): void {
@@ -53,6 +54,11 @@ class MockTestController extends Controller {
 
         $id = MockTest::create($data);
         MockTest::saveQuestions($id, $mcqIds);
+
+        EmailService::notifyAdmin(
+            'Mock test created: ' . $data['title'],
+            "A new mock test was added.\n\nTitle: {$data['title']}\nSlug: {$data['slug']}\nQuestions: " . count($mcqIds)
+        );
 
         flash('success', 'Mock test created.');
         Response::redirect(route('dashboard.mock-tests'));

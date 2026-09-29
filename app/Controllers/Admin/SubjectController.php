@@ -7,6 +7,7 @@ use Skoolyst\Core\Controller;
 use Skoolyst\Core\Response;
 use Skoolyst\Core\Validator;
 use Skoolyst\Models\Subject;
+use Skoolyst\Services\EmailService;
 
 class SubjectController extends Controller {
     public function index(): void {
@@ -35,6 +36,12 @@ class SubjectController extends Controller {
         }
 
         Subject::create($data);
+
+        EmailService::notifyAdmin(
+            'Subject created: ' . $data['name'],
+            "A new subject was added.\n\nName: {$data['name']}\nSlug: {$data['slug']}"
+        );
+
         flash('success', 'Subject created.');
         Response::redirect(route('dashboard.subjects'));
     }

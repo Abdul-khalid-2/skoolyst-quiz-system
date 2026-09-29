@@ -8,6 +8,7 @@ use Skoolyst\Core\Response;
 use Skoolyst\Core\Validator;
 use Skoolyst\Models\Subject;
 use Skoolyst\Models\Topic;
+use Skoolyst\Services\EmailService;
 
 class TopicController extends Controller {
     public function index(): void {
@@ -35,6 +36,12 @@ class TopicController extends Controller {
         }
 
         Topic::create($data);
+
+        EmailService::notifyAdmin(
+            'Topic created: ' . $data['name'],
+            "A new topic was added.\n\nName: {$data['name']}\nSlug: {$data['slug']}\nDifficulty: {$data['difficulty']}"
+        );
+
         flash('success', 'Topic created.');
         Response::redirect(route('dashboard.topics'));
     }

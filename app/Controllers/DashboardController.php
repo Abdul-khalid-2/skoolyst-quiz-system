@@ -12,6 +12,7 @@ use Skoolyst\Models\MockTest;
 use Skoolyst\Models\Subject;
 use Skoolyst\Models\Topic;
 use Skoolyst\Models\User;
+use Skoolyst\Services\EmailService;
 
 class DashboardController extends Controller {
     public function index(): void {
@@ -105,6 +106,11 @@ class DashboardController extends Controller {
             'mcqs' => $mcqs,
         ];
 
+        EmailService::notifyAdmin(
+            'MCQs exported: ' . $topic['name'],
+            "MCQs were exported.\n\nSubject: " . ($subject['name'] ?? '') . "\nTopic: {$topic['name']}\nQuestions exported: " . count($mcqs)
+        );
+
         $filename = 'mcqs-' . $topic['slug'] . '-' . date('Ymd-His') . '.json';
         header('Content-Type: application/json; charset=utf-8');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
@@ -188,6 +194,13 @@ class DashboardController extends Controller {
                 $failed = true;
             }
         }
+
+        EmailService::notifyAdmin(
+            'MCQ import ' . ($failed ? 'failed' : 'complete') . ': ' . $topic['name'],
+            $failed
+                ? "An MCQ import failed due to a database error. No MCQs were inserted.\n\nTopic: {$topic['name']}"
+                : "MCQ import finished for topic: {$topic['name']}\n\nSubmitted: {$result['totalSubmitted']}\nInserted: {$inserted}\nDuplicates skipped: " . count($result['duplicates']) . "\nInvalid: " . count($result['invalid'])
+        );
 
         $this->view('admin.settings', [
             'errors' => [],

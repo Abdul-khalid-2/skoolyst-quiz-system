@@ -9,6 +9,7 @@ use Skoolyst\Core\Validator;
 use Skoolyst\Models\Mcq;
 use Skoolyst\Models\Subject;
 use Skoolyst\Models\Topic;
+use Skoolyst\Services\EmailService;
 
 class McqController extends Controller {
     public function index(): void {
@@ -46,6 +47,11 @@ class McqController extends Controller {
 
         $id = Mcq::create($data);
         Mcq::saveOptions($id, $options);
+
+        EmailService::notifyAdmin(
+            'MCQ added',
+            "A new MCQ was added.\n\nQuestion: " . mb_strimwidth($data['question_text'], 0, 200, '...') . "\nDifficulty: {$data['difficulty']}"
+        );
 
         Response::redirect(route('dashboard.mcqs'));
     }

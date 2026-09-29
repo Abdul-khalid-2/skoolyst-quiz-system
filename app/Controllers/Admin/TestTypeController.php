@@ -7,6 +7,7 @@ use Skoolyst\Core\Controller;
 use Skoolyst\Core\Response;
 use Skoolyst\Core\Validator;
 use Skoolyst\Models\TestType;
+use Skoolyst\Services\EmailService;
 
 class TestTypeController extends Controller {
     public function index(): void {
@@ -35,6 +36,12 @@ class TestTypeController extends Controller {
         }
 
         TestType::create($data);
+
+        EmailService::notifyAdmin(
+            'Test type created: ' . $data['name'],
+            "A new test type was added.\n\nName: {$data['name']}\nSlug: {$data['slug']}"
+        );
+
         flash('success', 'Test type created.');
         Response::redirect(route('dashboard.test-types'));
     }

@@ -24,6 +24,13 @@ class AuthService {
 
         $user = User::create($name, $email, password_hash($password, PASSWORD_DEFAULT));
         $this->startSession($user);
+
+        EmailService::send(
+            $email,
+            'Welcome to Skoolyst MCQs',
+            "Hi {$name},\n\nYour Skoolyst MCQs account has been created successfully. You can now log in and start practicing.\n\nSkoolyst MCQs"
+        );
+
         return [];
     }
 
