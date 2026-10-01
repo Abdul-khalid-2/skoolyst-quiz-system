@@ -6,13 +6,18 @@ namespace Skoolyst\Controllers;
 use Skoolyst\Core\Controller;
 use Skoolyst\Core\Response;
 use Skoolyst\Core\Validator;
+use Skoolyst\Models\User;
 use Skoolyst\Services\AuthService;
+use Skoolyst\Services\EmailService;
+use Skoolyst\Services\SkoolystAuthService;
 
 class AuthController extends Controller {
     private AuthService $auth;
+    private SkoolystAuthService $skoolystAuth;
 
     public function __construct() {
         $this->auth = new AuthService();
+        $this->skoolystAuth = new SkoolystAuthService();
     }
 
     public function showLogin(): void {
@@ -81,6 +86,73 @@ class AuthController extends Controller {
 
     public function logout(): void {
         $this->auth->logout();
+        Response::redirect(route('home'));
+    }
+
+    public function redirectToSkoolyst(): void {
+        if (!$this->skoolystAuth->isConfigured()) {
+            $this->view('auth.login', [
+                'errors' => ['_general' => 'Login with Skoolyst is not configured yet.'],
+                'old' => [],
+            ]);
+            return;
+        }
+
+        Response::redirect($this->skoolystAuth->authorizeUrl());
+    }
+
+    public function handleSkoolystCallback(): void {
+        if (isset($_GET['error'])) {
+            $this->view('auth.login', [
+                'errors' => ['_general' => 'Login with Skoolyst was cancelled.'],
+                'old' => [],
+            ]);
+            return;
+        }
+
+        $code = (string) ($_GET['code'] ?? '');
+        $state = (string) ($_GET['state'] ?? '');
+
+        if ($code === '' || $state === '') {
+            $this->view('auth.login', [
+                'errors' => ['_general' => 'Invalid login response from Skoolyst.'],
+                'old' => [],
+            ]);
+            return;
+        }
+
+        try {
+            $data = $this->skoolystAuth->handleCallback($code, $state);
+        } catch (\Throwable $e) {
+            $this->view('auth.login', ['errors' => ['_general' => $e->getMessage()], 'old' => []]);
+            return;
+        }
+
+        $remoteUser = $data['user'];
+        $localUser = User::findBySkoolystId((int) $remoteUser['id']);
+        $isNewAccount = false;
+
+        if ($localUser === null) {
+            // Link an existing local account with the same email instead of creating a duplicate.
+            $localUser = User::findByEmail($remoteUser['email']);
+            if ($localUser !== null) {
+                User::linkSkoolystId((int) $localUser['id'], (int) $remoteUser['id']);
+            } else {
+                $localUser = User::createFromSkoolyst((int) $remoteUser['id'], $remoteUser['name'], $remoteUser['email']);
+                $isNewAccount = true;
+            }
+        }
+
+        $this->auth->loginAs($localUser);
+
+        if ($isNewAccount) {
+            EmailService::send(
+                $remoteUser['email'],
+                'Welcome to Skoolyst MCQs',
+                "Hi {$remoteUser['name']},\n\nYour Skoolyst MCQs account has been created via Login with Skoolyst. You can now start practicing.\n\nSkoolyst MCQs"
+            );
+        }
+
         Response::redirect(route('home'));
     }
 }

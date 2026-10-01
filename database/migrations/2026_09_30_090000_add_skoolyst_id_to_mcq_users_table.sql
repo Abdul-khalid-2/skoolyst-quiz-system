@@ -1,0 +1,2 @@
+ALTER TABLE mcq_users
+    ADD COLUMN skoolyst_id BIGINT UNSIGNED NULL UNIQUE AFTER id;

@@ -93,3 +93,6 @@ $router->post('/login', [AuthController::class, 'login'], [GuestMiddleware::clas
 $router->get('/register', [AuthController::class, 'showRegister'], [GuestMiddleware::class])->name('register');
 $router->post('/register', [AuthController::class, 'register'], [GuestMiddleware::class]);
 $router->get('/logout', [AuthController::class, 'logout'])->name('logout');
+
+$router->get('/auth/skoolyst', [AuthController::class, 'redirectToSkoolyst'], [GuestMiddleware::class])->name('auth.skoolyst');
+$router->get('/auth/skoolyst/callback', [AuthController::class, 'handleSkoolystCallback'])->name('auth.skoolyst.callback');

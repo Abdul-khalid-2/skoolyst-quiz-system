@@ -38,6 +38,15 @@ class AuthService {
         unset($_SESSION['user']);
     }
 
+    /**
+     * Starts a local session for an already-resolved user record, without checking a
+     * password — used by SSO logins (e.g. "Login with Skoolyst") once the identity
+     * provider has confirmed who the user is.
+     */
+    public function loginAs(array $user): void {
+        $this->startSession($user);
+    }
+
     private function startSession(array $user): void {
         $_SESSION['user'] = [
             'id' => $user['id'],
