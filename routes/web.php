@@ -96,3 +96,6 @@ $router->get('/logout', [AuthController::class, 'logout'])->name('logout');
 
 $router->get('/auth/skoolyst', [AuthController::class, 'redirectToSkoolyst'], [GuestMiddleware::class])->name('auth.skoolyst');
 $router->get('/auth/skoolyst/callback', [AuthController::class, 'handleSkoolystCallback'])->name('auth.skoolyst.callback');
+
+$router->get('/auth/google', [AuthController::class, 'redirectToGoogle'], [GuestMiddleware::class])->name('auth.google');
+$router->get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');

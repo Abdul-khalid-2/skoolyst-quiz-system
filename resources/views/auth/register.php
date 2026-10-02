@@ -48,6 +48,7 @@
 <div class="sk-auth-divider my-3 text-center text-secondary-custom small">or</div>
 
 <a href="{{ route('auth.skoolyst') }}" class="btn btn-sk-outline w-100 btn-lg"><i class="bi bi-box-arrow-in-right me-2"></i>Sign up with Skoolyst</a>
+<a href="{{ route('auth.google') }}" class="btn btn-sk-outline w-100 btn-lg mt-2"><i class="bi bi-google me-2"></i>Continue with Google</a>
 
 <p class="sk-auth-footer">Already have an account? <a href="{{ route('login') }}">Log in</a></p>
 @endsection

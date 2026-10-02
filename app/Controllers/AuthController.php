@@ -9,15 +9,18 @@ use Skoolyst\Core\Validator;
 use Skoolyst\Models\User;
 use Skoolyst\Services\AuthService;
 use Skoolyst\Services\EmailService;
+use Skoolyst\Services\GoogleAuthService;
 use Skoolyst\Services\SkoolystAuthService;
 
 class AuthController extends Controller {
     private AuthService $auth;
     private SkoolystAuthService $skoolystAuth;
+    private GoogleAuthService $googleAuth;
 
     public function __construct() {
         $this->auth = new AuthService();
         $this->skoolystAuth = new SkoolystAuthService();
+        $this->googleAuth = new GoogleAuthService();
     }
 
     public function showLogin(): void {
@@ -150,6 +153,88 @@ class AuthController extends Controller {
                 $remoteUser['email'],
                 'Welcome to Skoolyst MCQs',
                 "Hi {$remoteUser['name']},\n\nYour Skoolyst MCQs account has been created via Login with Skoolyst. You can now start practicing.\n\nSkoolyst MCQs"
+            );
+        }
+
+        Response::redirect(route('home'));
+    }
+
+    public function redirectToGoogle(): void {
+        if (!$this->googleAuth->isConfigured()) {
+            $this->view('auth.login', [
+                'errors' => ['_general' => 'Login with Google is not configured yet.'],
+                'old' => [],
+            ]);
+            return;
+        }
+
+        Response::redirect($this->googleAuth->authorizeUrl());
+    }
+
+    public function handleGoogleCallback(): void {
+        if (isset($_GET['error'])) {
+            // User cancelled on Google's consent screen — not an error worth surfacing.
+            Response::redirect(route('login'));
+            return;
+        }
+
+        $code = (string) ($_GET['code'] ?? '');
+        $state = (string) ($_GET['state'] ?? '');
+
+        if ($code === '' || $state === '') {
+            $this->view('auth.login', [
+                'errors' => ['_general' => 'Invalid login response from Google.'],
+                'old' => [],
+            ]);
+            return;
+        }
+
+        try {
+            $identity = $this->googleAuth->handleCallback($code, $state);
+        } catch (\Throwable $e) {
+            $this->view('auth.login', ['errors' => ['_general' => $e->getMessage()], 'old' => []]);
+            return;
+        }
+
+        $localUser = User::findByGoogleId($identity['id']);
+        $isNewAccount = false;
+
+        if ($localUser === null) {
+            $existing = User::findByEmail($identity['email']);
+
+            if ($existing !== null && $existing['google_id'] !== null && $existing['google_id'] !== $identity['id']) {
+                // This email is already linked to a different Google account — don't silently take it over.
+                $this->view('auth.login', [
+                    'errors' => ['_general' => 'This email is already linked to a different Google account. Please sign in with your password instead.'],
+                    'old' => [],
+                ]);
+                return;
+            }
+
+            if ($existing !== null) {
+                if (!$identity['email_verified']) {
+                    $this->view('auth.login', [
+                        'errors' => ['_general' => 'An account with this email already exists. Please sign in with your password instead.'],
+                        'old' => [],
+                    ]);
+                    return;
+                }
+
+                User::linkGoogleId((int) $existing['id'], $identity['id']);
+                $localUser = $existing;
+            } else {
+                $localUser = User::createFromGoogle($identity['id'], $identity['name'], $identity['email']);
+                $isNewAccount = true;
+            }
+        }
+
+        $this->auth->loginAs($localUser);
+
+        if ($isNewAccount) {
+            EmailService::send(
+                $identity['email'],
+                'Welcome to Skoolyst MCQs',
+                "Hi {$identity['name']},\n\nYour Skoolyst MCQs account has been created via Login with Google. You can now start practicing.\n\nSkoolyst MCQs"
             );
         }
 

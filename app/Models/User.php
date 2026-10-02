@@ -51,6 +51,33 @@ class User extends Model {
         ];
     }
 
+    public static function findByGoogleId(string $googleId): ?array {
+        $stmt = Database::connection()->prepare('SELECT * FROM mcq_users WHERE google_id = ? LIMIT 1');
+        $stmt->execute([$googleId]);
+        $user = $stmt->fetch(\PDO::FETCH_ASSOC);
+        return $user ?: null;
+    }
+
+    public static function linkGoogleId(int $id, string $googleId): void {
+        $stmt = Database::connection()->prepare('UPDATE mcq_users SET google_id = ?, updated_at = NOW() WHERE id = ?');
+        $stmt->execute([$googleId, $id]);
+    }
+
+    public static function createFromGoogle(string $googleId, string $name, string $email): array {
+        $stmt = Database::connection()->prepare(
+            'INSERT INTO mcq_users (google_id, name, email, password, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW())'
+        );
+        $stmt->execute([$googleId, $name, $email, password_hash(bin2hex(random_bytes(32)), PASSWORD_DEFAULT), 'user']);
+
+        return [
+            'id' => (int) Database::connection()->lastInsertId(),
+            'google_id' => $googleId,
+            'name' => $name,
+            'email' => $email,
+            'role' => 'user',
+        ];
+    }
+
     public static function updatePassword(int $id, string $passwordHash): void {
         $stmt = Database::connection()->prepare('UPDATE mcq_users SET password = ?, updated_at = NOW() WHERE id = ?');
         $stmt->execute([$passwordHash, $id]);
