@@ -21,6 +21,8 @@ class PageController extends Controller {
             ['loc' => route('subjects.index'), 'priority' => '0.8'],
             ['loc' => route('test-types.index'), 'priority' => '0.8'],
             ['loc' => route('mock-tests.index'), 'priority' => '0.8'],
+            ['loc' => route('terms'), 'priority' => '0.3'],
+            ['loc' => route('privacy-policy'), 'priority' => '0.3'],
         ];
 
         foreach (Subject::all() as $subject) {
@@ -61,6 +63,14 @@ class PageController extends Controller {
                 'testTypes' => TestType::count(),
             ],
         ]);
+    }
+
+    public function terms(): void {
+        $this->view('pages.terms');
+    }
+
+    public function privacyPolicy(): void {
+        $this->view('pages.privacy-policy');
     }
 
     public function search(): void {

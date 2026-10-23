@@ -1049,3 +1049,12 @@ a:hover { color: var(--sk-navy); }
   .sk-ad-body { padding-right: 0; margin-top: 4px; }
   .sk-ad-card { flex-wrap: wrap; }
 }
+
+/* Long-form content pages (Terms, Privacy Policy, etc.) */
+.sk-prose { padding: 1rem 0 2rem; }
+.sk-prose h2 { font-size: 1.25rem; font-weight: 700; color: var(--sk-navy); margin: 1.75rem 0 0.75rem; }
+.sk-prose h2:first-child { margin-top: 0; }
+.sk-prose p { color: var(--sk-text-secondary); line-height: 1.7; margin-bottom: 1rem; }
+.sk-prose ul { color: var(--sk-text-secondary); line-height: 1.7; margin-bottom: 1rem; padding-left: 1.25rem; }
+.sk-prose li { margin-bottom: 0.4rem; }
+.sk-prose a { color: var(--sk-navy-light); font-weight: 600; }

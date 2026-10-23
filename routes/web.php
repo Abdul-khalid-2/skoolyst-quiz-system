@@ -20,6 +20,9 @@ $router->get('/ads/click/{id}', [AdController::class, 'click'])->name('ads.click
 $router->get('/ads/impression/{id}', [AdController::class, 'impression'])->name('ads.impression');
 $router->get('/sitemap.xml', [PageController::class, 'sitemap'])->name('sitemap');
 
+$router->get('/terms', [PageController::class, 'terms'])->name('terms');
+$router->get('/privacy-policy', [PageController::class, 'privacyPolicy'])->name('privacy-policy');
+
 $router->get('/search', [PageController::class, 'search'])->name('search');
 $router->get('/search/api', [PageController::class, 'searchApi'])->name('search.api');
 

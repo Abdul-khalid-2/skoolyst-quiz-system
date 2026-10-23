@@ -19,8 +19,8 @@
                 <ul class="list-unstyled">
                     <li class="mb-2"><a href="#">About</a></li>
                     <li class="mb-2"><a href="#">Contact</a></li>
-                    <li class="mb-2"><a href="#">Privacy</a></li>
-                    <li class="mb-2"><a href="#">Terms</a></li>
+                    <li class="mb-2"><a href="{{ route('privacy-policy') }}">Privacy</a></li>
+                    <li class="mb-2"><a href="{{ route('terms') }}">Terms</a></li>
                 </ul>
             </div>
             <div class="col-lg-4">
