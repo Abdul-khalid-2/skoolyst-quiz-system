@@ -40,4 +40,27 @@
         <label for="description" class="sk-auth-label">Description <span class="text-secondary-custom fw-normal">(optional)</span></label>
         <textarea class="form-control" id="description" name="description" rows="3">{{ old('description', $testType['description'] ?? '') }}</textarea>
     </div>
+
+    <div class="col-12">
+        <label class="sk-auth-label">Subjects</label>
+        <p class="text-secondary-custom small mb-2">Choose the subjects covered by this test type.</p>
+        @if(count($subjects) > 0)
+        <div class="row g-2">
+            <?php $selectedSubjectIds = array_map('intval', $selectedSubjectIds ?? []); ?>
+            @foreach($subjects as $subject)
+            <div class="col-sm-6 col-lg-4">
+                <label class="form-check border rounded p-2 ps-5 h-100">
+                    <input class="form-check-input" type="checkbox" name="subject_ids[]" value="{{ $subject['id'] }}" <?= in_array((int) $subject['id'], $selectedSubjectIds, true) ? 'checked' : '' ?>>
+                    <span class="form-check-label">{{ $subject['name'] }}</span>
+                </label>
+            </div>
+            @endforeach
+        </div>
+        @else
+        <p class="text-secondary-custom small mb-0">Create a subject before assigning subjects to this test type.</p>
+        @endif
+        @if(isset($errors['subject_ids']))
+        <div class="text-danger small mt-2">{{ $errors['subject_ids'] }}</div>
+        @endif
+    </div>
 </div>

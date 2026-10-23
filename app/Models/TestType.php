@@ -93,6 +93,30 @@ class TestType extends Model {
         $stmt->execute([$id]);
     }
 
+    public static function subjectIds(int $id): array {
+        $stmt = Database::connection()->prepare(
+            'SELECT subject_id FROM mcq_subject_test_type WHERE test_type_id = ? ORDER BY subject_id ASC'
+        );
+        $stmt->execute([$id]);
+        return array_map('intval', $stmt->fetchAll(\PDO::FETCH_COLUMN));
+    }
+
+    /**
+     * @param int[] $subjectIds
+     */
+    public static function syncSubjects(int $id, array $subjectIds): void {
+        $pdo = Database::connection();
+        $delete = $pdo->prepare('DELETE FROM mcq_subject_test_type WHERE test_type_id = ?');
+        $delete->execute([$id]);
+
+        $insert = $pdo->prepare(
+            'INSERT INTO mcq_subject_test_type (subject_id, test_type_id, created_at) VALUES (?, ?, NOW())'
+        );
+        foreach ($subjectIds as $subjectId) {
+            $insert->execute([$subjectId, $id]);
+        }
+    }
+
     public static function mockTestCount(int $id): int {
         $stmt = Database::connection()->prepare('SELECT COUNT(*) FROM mcq_mock_tests WHERE test_type_id = ?');
         $stmt->execute([$id]);

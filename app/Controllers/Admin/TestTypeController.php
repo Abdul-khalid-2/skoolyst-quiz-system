@@ -4,8 +4,10 @@ declare(strict_types=1);
 namespace Skoolyst\Controllers\Admin;
 
 use Skoolyst\Core\Controller;
+use Skoolyst\Core\Database;
 use Skoolyst\Core\Response;
 use Skoolyst\Core\Validator;
+use Skoolyst\Models\Subject;
 use Skoolyst\Models\TestType;
 use Skoolyst\Services\EmailService;
 
@@ -19,23 +21,46 @@ class TestTypeController extends Controller {
     }
 
     public function create(): void {
-        $this->view('admin.test-types.create', ['errors' => []]);
+        $this->view('admin.test-types.create', [
+            'subjects' => Subject::all(),
+            'selectedSubjectIds' => [],
+            'errors' => [],
+        ]);
     }
 
     public function store(): void {
         if (!csrf_verify()) {
-            $this->view('admin.test-types.create', ['errors' => ['_general' => 'Your session expired. Please try again.']]);
+            $this->view('admin.test-types.create', [
+                'subjects' => Subject::all(),
+                'selectedSubjectIds' => [],
+                'errors' => ['_general' => 'Your session expired. Please try again.'],
+            ]);
             return;
         }
 
         [$data, $errors] = $this->validateRequest();
 
         if (!empty($errors)) {
-            $this->view('admin.test-types.create', ['errors' => $errors]);
+            $this->view('admin.test-types.create', [
+                'subjects' => Subject::all(),
+                'selectedSubjectIds' => $data['subject_ids'],
+                'errors' => $errors,
+            ]);
             return;
         }
 
-        TestType::create($data);
+        $pdo = Database::connection();
+        $pdo->beginTransaction();
+        try {
+            $testTypeId = TestType::create($data);
+            TestType::syncSubjects($testTypeId, $data['subject_ids']);
+            $pdo->commit();
+        } catch (\Throwable $exception) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            throw $exception;
+        }
 
         EmailService::notifyAdmin(
             'Test type created: ' . $data['name'],
@@ -52,7 +77,12 @@ class TestTypeController extends Controller {
             Response::redirect(route('dashboard.test-types'));
         }
 
-        $this->view('admin.test-types.edit', ['testType' => $testType, 'errors' => []]);
+        $this->view('admin.test-types.edit', [
+            'testType' => $testType,
+            'subjects' => Subject::all(),
+            'selectedSubjectIds' => TestType::subjectIds((int) $id),
+            'errors' => [],
+        ]);
     }
 
     public function update(string $id): void {
@@ -63,18 +93,40 @@ class TestTypeController extends Controller {
         }
 
         if (!csrf_verify()) {
-            $this->view('admin.test-types.edit', ['testType' => $testType, 'errors' => ['_general' => 'Your session expired. Please try again.']]);
+            $this->view('admin.test-types.edit', [
+                'testType' => $testType,
+                'subjects' => Subject::all(),
+                'selectedSubjectIds' => TestType::subjectIds($id),
+                'errors' => ['_general' => 'Your session expired. Please try again.'],
+            ]);
             return;
         }
 
         [$data, $errors] = $this->validateRequest($id);
 
         if (!empty($errors)) {
-            $this->view('admin.test-types.edit', ['testType' => array_merge($testType, $data), 'errors' => $errors]);
+            $this->view('admin.test-types.edit', [
+                'testType' => array_merge($testType, $data),
+                'subjects' => Subject::all(),
+                'selectedSubjectIds' => $data['subject_ids'],
+                'errors' => $errors,
+            ]);
             return;
         }
 
-        TestType::update($id, $data);
+        $pdo = Database::connection();
+        $pdo->beginTransaction();
+        try {
+            TestType::update($id, $data);
+            TestType::syncSubjects($id, $data['subject_ids']);
+            $pdo->commit();
+        } catch (\Throwable $exception) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            throw $exception;
+        }
+
         flash('success', 'Test type updated.');
         Response::redirect(route('dashboard.test-types'));
     }
@@ -99,7 +151,7 @@ class TestTypeController extends Controller {
     }
 
     /**
-     * @return array{0: array<string, string>, 1: array<string, string>}
+     * @return array{0: array<string, mixed>, 1: array<string, string>}
      */
     private function validateRequest(?int $currentId = null): array {
         $data = [
@@ -109,6 +161,8 @@ class TestTypeController extends Controller {
             'icon' => trim((string) old('icon')),
             'badge_class' => trim((string) old('badge_class')),
         ];
+        $subjectIds = $_POST['subject_ids'] ?? [];
+        $data['subject_ids'] = [];
 
         $data['slug'] = slugify($data['slug'] !== '' ? $data['slug'] : $data['name']);
 
@@ -116,6 +170,25 @@ class TestTypeController extends Controller {
             'name' => 'required',
             'slug' => 'required',
         ]);
+
+        if (!is_array($subjectIds)) {
+            $errors['subject_ids'] = 'Select valid subjects.';
+        } else {
+            foreach ($subjectIds as $subjectId) {
+                if ((!is_string($subjectId) && !is_int($subjectId)) || filter_var($subjectId, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) === false) {
+                    $errors['subject_ids'] = 'Select valid subjects.';
+                    continue;
+                }
+
+                $data['subject_ids'][] = (int) $subjectId;
+            }
+
+            $data['subject_ids'] = array_values(array_unique($data['subject_ids']));
+            $availableSubjectIds = array_map('intval', array_column(Subject::all(), 'id'));
+            if (array_diff($data['subject_ids'], $availableSubjectIds) !== []) {
+                $errors['subject_ids'] = 'One or more selected subjects no longer exist.';
+            }
+        }
 
         if (empty($errors['slug']) && TestType::findBySlug($data['slug'], $currentId) !== null) {
             $errors['slug'] = 'This slug is already in use by another test type.';
