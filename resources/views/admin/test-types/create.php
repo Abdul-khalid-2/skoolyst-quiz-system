@@ -14,7 +14,7 @@
 <div class="sk-info-box">
     <form method="POST" action="{{ route('dashboard.test-types.create') }}" novalidate>
         <?= csrf_field() ?>
-        @include('admin.test-types._form', ['errors' => $errors, 'testType' => []])
+        @include('admin.test-types._form', ['errors' => $errors, 'testType' => [], 'subjects' => $subjects, 'selectedSubjectIds' => $selectedSubjectIds])
         <button type="submit" class="btn btn-sk-gold mt-3"><i class="bi bi-check-circle me-1"></i>Save Test Type</button>
     </form>
 </div>
