@@ -1,7 +1,14 @@
 User-agent: *
+Allow: /
 Disallow: /dashboard
 Disallow: /login
 Disallow: /register
+Disallow: /logout
+Disallow: /auth/
+Disallow: /ads/
 Disallow: /search
+Disallow: /mock-tests/*/take
+Disallow: /mock-tests/*/result
+Disallow: /topics/*/result
 
-Sitemap: /sitemap.xml
+Sitemap: https://mcqs.skoolyst.com/sitemap.xml

@@ -93,7 +93,7 @@ class View {
 
     private static function cacheFile(string $view, string $php): string {
         $dir = dirname(__DIR__, 2) . '/storage/cache/views';
-        if (!is_dir($dir)) mkdir($dir, 0777, true);
+        if (!is_dir($dir)) mkdir($dir, 0775, true);
 
         $name = str_replace(['/', '.'], '_', $view) . '_' . md5($php) . '.php';
         $file = $dir . '/' . $name;

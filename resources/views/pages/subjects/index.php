@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
-@section('title', 'Subjects')
+<?php $metaDescription = 'Browse all subjects on Skoolyst MCQs: Biology, Chemistry, Physics, English, Urdu, Islamic Studies, General Knowledge and more. Practice MCQs with answers.'; ?>
+@section('title', 'All Subjects - Practice MCQs by Subject')
+@section('meta_description', $metaDescription)
 
 @section('content')
 @include('components.breadcrumb', ['breadcrumbs' => [['label' => 'Subjects', 'url' => '#']]])

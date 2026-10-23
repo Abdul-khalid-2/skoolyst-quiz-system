@@ -1,6 +1,10 @@
 @extends('layouts.app')
 
-@section('title', $topic['name'] . ' - Topic')
+<?php
+$metaDescription = $topic['name'] . ' MCQs with answers and explanations. Practice ' . count($mcqs) . ' ' . $topic['subject_name'] . ' questions on Skoolyst MCQs.';
+?>
+@section('title', $topic['name'] . ' MCQs with Answers - ' . $topic['subject_name'])
+@section('meta_description', $metaDescription)
 
 @section('schema')
 <?php if (!empty($mcqs)): ?>

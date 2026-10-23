@@ -35,7 +35,10 @@ class AuthService {
     }
 
     public function logout(): void {
-        unset($_SESSION['user']);
+        $_SESSION = [];
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_regenerate_id(true);
+        }
     }
 
     /**
@@ -48,6 +51,11 @@ class AuthService {
     }
 
     private function startSession(array $user): void {
+        // Prevent session fixation: issue a fresh session id whenever someone logs in.
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_regenerate_id(true);
+        }
+
         $_SESSION['user'] = [
             'id' => $user['id'],
             'name' => $user['name'],

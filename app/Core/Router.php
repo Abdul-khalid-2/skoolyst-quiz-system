@@ -54,6 +54,13 @@ class Router {
     public function dispatch(string $method, string $uri): mixed {
         $path = parse_url($uri, PHP_URL_PATH) ?: '/';
 
+        // /subjects/ and /subjects are the same page: 301 to the clean URL to avoid duplicate content.
+        if ($method === 'GET' && strlen($path) > 1 && str_ends_with($path, '/')) {
+            $query = parse_url($uri, PHP_URL_QUERY);
+            header('Location: ' . rtrim($path, '/') . ($query ? '?' . $query : ''), true, 301);
+            exit;
+        }
+
         $base = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '')), '/');
         if ($base !== '' && str_starts_with($path, $base)) {
             $path = substr($path, strlen($base));

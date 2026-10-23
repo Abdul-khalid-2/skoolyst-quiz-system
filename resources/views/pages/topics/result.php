@@ -1,5 +1,6 @@
 @extends('layouts.app')
 
+@section('robots', 'noindex, nofollow')
 @section('title', 'Topic Test Result - ' . $topic['name'])
 
 @section('content')

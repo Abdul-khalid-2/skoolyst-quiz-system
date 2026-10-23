@@ -20,6 +20,7 @@ $router->get('/ads/click/{id}', [AdController::class, 'click'])->name('ads.click
 $router->get('/ads/impression/{id}', [AdController::class, 'impression'])->name('ads.impression');
 $router->get('/sitemap.xml', [PageController::class, 'sitemap'])->name('sitemap');
 
+$router->get('/about', [PageController::class, 'about'])->name('about');
 $router->get('/terms', [PageController::class, 'terms'])->name('terms');
 $router->get('/privacy-policy', [PageController::class, 'privacyPolicy'])->name('privacy-policy');
 
@@ -95,7 +96,8 @@ $router->get('/login', [AuthController::class, 'showLogin'], [GuestMiddleware::c
 $router->post('/login', [AuthController::class, 'login'], [GuestMiddleware::class]);
 $router->get('/register', [AuthController::class, 'showRegister'], [GuestMiddleware::class])->name('register');
 $router->post('/register', [AuthController::class, 'register'], [GuestMiddleware::class]);
-$router->get('/logout', [AuthController::class, 'logout'])->name('logout');
+$router->post('/logout', [AuthController::class, 'logout'])->name('logout');
+$router->get('/logout', [AuthController::class, 'logout']);
 
 $router->get('/auth/skoolyst', [AuthController::class, 'redirectToSkoolyst'], [GuestMiddleware::class])->name('auth.skoolyst');
 $router->get('/auth/skoolyst/callback', [AuthController::class, 'handleSkoolystCallback'])->name('auth.skoolyst.callback');

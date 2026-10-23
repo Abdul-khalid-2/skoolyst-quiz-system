@@ -22,7 +22,10 @@
                 @else
                 <span class="text-secondary-custom small d-none d-lg-inline">Hi, {{ auth_user()['name'] }}</span>
                 @endif
-                <a href="{{ route('logout') }}" class="btn btn-sk-outline btn-sm-sk">Logout</a>
+                <form method="post" action="{{ route('logout') }}" class="d-inline">
+                    <?= csrf_field() ?>
+                    <button type="submit" class="btn btn-sk-outline btn-sm-sk">Logout</button>
+                </form>
                 @else
                 <a href="{{ route('login') }}" class="btn btn-sk-outline btn-sm-sk">Login</a>
                 <a href="{{ route('register') }}" class="btn btn-sk-navy btn-sm-sk">Register</a>

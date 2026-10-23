@@ -1,6 +1,10 @@
 @extends('layouts.app')
 
-@section('title', 'Practice MCQs - ' . $topic['name'])
+<?php
+$metaDescription = 'Practice ' . $topic['name'] . ' MCQs online with instant feedback and explanations. ' . $topic['subject_name'] . ' practice test on Skoolyst MCQs.';
+?>
+@section('title', 'Practice ' . $topic['name'] . ' MCQs Online - ' . $topic['subject_name'])
+@section('meta_description', $metaDescription)
 
 @section('schema')
 <?php if (!empty($mcqs)): ?>

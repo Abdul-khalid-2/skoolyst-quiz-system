@@ -1,6 +1,10 @@
 @extends('layouts.app')
 
-@section('title', $testType['name'] . ' ' . $subject['name'] . ' - Subject + Test Type')
+<?php
+$metaDescription = $testType['name'] . ' ' . $subject['name'] . ' MCQs with answers: ' . (int) $mcqCount . ' practice questions, topic-wise. Free ' . $testType['name'] . ' preparation on Skoolyst MCQs.';
+?>
+@section('title', $testType['name'] . ' ' . $subject['name'] . ' MCQs with Answers')
+@section('meta_description', $metaDescription)
 
 @section('content')
 @include('components.breadcrumb', ['breadcrumbs' => [

@@ -14,7 +14,7 @@
                 <li><a class="dropdown-item" href="{{ route('dashboard.account') }}"><i class="bi bi-person me-2"></i>Profile</a></li>
                 <li><a class="dropdown-item" href="{{ route('dashboard.settings') }}"><i class="bi bi-gear me-2"></i>Settings</a></li>
                 <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="{{ route('logout') }}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                <li><form method="post" action="{{ route('logout') }}"><?= csrf_field() ?><button type="submit" class="dropdown-item"><i class="bi bi-box-arrow-right me-2"></i>Logout</button></form></li>
             </ul>
         </div>
     </div>

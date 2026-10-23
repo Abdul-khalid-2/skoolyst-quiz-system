@@ -1,5 +1,6 @@
 @extends('layouts.app')
 
+@section('robots', 'noindex, follow')
 @section('title', $term !== '' ? 'Search results for "' . $term . '"' : 'Search')
 
 @section('content')

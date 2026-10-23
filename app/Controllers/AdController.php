@@ -9,7 +9,16 @@ use Skoolyst\Services\AdService;
 
 class AdController extends Controller {
     public function click(string $id): never {
-        $clickUrl = $this->sanitizeClickUrl($_GET['url'] ?? '');
+        $rawUrl = (string) ($_GET['url'] ?? '');
+        $sig = (string) ($_GET['sig'] ?? '');
+        $valid = $rawUrl !== '' && hash_equals(AdService::signClick($id, $rawUrl), $sig);
+
+        // Unsigned/forged links never redirect off-site (prevents use as an open redirect).
+        if (!$valid) {
+            Response::redirect('/');
+        }
+
+        $clickUrl = $this->sanitizeClickUrl($rawUrl);
         AdService::trackClick($id);
         Response::redirect($clickUrl ?: '/');
     }

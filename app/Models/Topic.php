@@ -19,6 +19,17 @@ class Topic extends Model {
         )->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    /** Topics that have at least one question, with the most recent change date (for the sitemap). */
+    public static function withQuestionsForSitemap(): array {
+        return Database::connection()->query(
+            'SELECT t.slug, GREATEST(t.updated_at, MAX(q.updated_at)) AS last_changed
+             FROM mcq_topics t
+             JOIN mcq_questions q ON q.topic_id = t.id
+             GROUP BY t.id, t.slug, t.updated_at
+             ORDER BY t.slug ASC'
+        )->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
     public static function count(): int {
         return (int) Database::connection()->query('SELECT COUNT(*) FROM mcq_topics')->fetchColumn();
     }

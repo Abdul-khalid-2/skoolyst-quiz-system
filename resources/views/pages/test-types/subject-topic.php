@@ -1,6 +1,12 @@
 @extends('layouts.app')
 
-@section('title', $topic['name'] . ' - ' . $subject['name'] . ' - ' . $testType['name'])
+<?php
+$canonicalUrl = route('topics.show', $topic['slug']);
+$metaDescription = $topic['name'] . ' MCQs for ' . $testType['name'] . ' ' . $subject['name'] . ' with answers and explanations on Skoolyst MCQs.';
+?>
+@section('title', $topic['name'] . ' MCQs - ' . $testType['name'] . ' ' . $subject['name'])
+@section('meta_description', $metaDescription)
+@section('canonical', $canonicalUrl)
 
 @section('content')
 @include('components.breadcrumb', ['breadcrumbs' => [
