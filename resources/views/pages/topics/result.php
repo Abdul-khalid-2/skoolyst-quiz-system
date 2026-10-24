@@ -28,7 +28,7 @@
             'message' => 'Create a free account or log in to have your practice results tracked here.',
         ])
         <div class="d-flex justify-content-center gap-2 flex-wrap">
-            <a href="{{ route('login') }}" class="btn btn-sk-gold btn-lg"><i class="bi bi-box-arrow-in-right me-2"></i>Log In</a>
+            <a href="{{ login_url(route('practice.show', $topic['slug'])) }}" class="btn btn-sk-gold btn-lg"><i class="bi bi-box-arrow-in-right me-2"></i>Log In</a>
             <a href="{{ route('practice.show', $topic['slug']) }}" class="btn btn-sk-light btn-lg"><i class="bi bi-play-circle-fill me-2"></i>Practice This Topic</a>
         </div>
         @else

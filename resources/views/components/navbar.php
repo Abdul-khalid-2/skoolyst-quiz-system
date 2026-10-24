@@ -27,8 +27,8 @@
                     <button type="submit" class="btn btn-sk-outline btn-sm-sk">Logout</button>
                 </form>
                 @else
-                <a href="{{ route('login') }}" class="btn btn-sk-outline btn-sm-sk">Login</a>
-                <a href="{{ route('register') }}" class="btn btn-sk-navy btn-sm-sk">Register</a>
+                <a href="{{ login_url() }}" class="btn btn-sk-outline btn-sm-sk">Login</a>
+                <a href="{{ register_url() }}" class="btn btn-sk-navy btn-sm-sk">Register</a>
                 @endif
             </div>
         </div>

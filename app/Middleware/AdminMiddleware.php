@@ -8,7 +8,8 @@ use Skoolyst\Core\Response;
 class AdminMiddleware {
     public function handle(): void {
         if (!is_authenticated()) {
-            Response::redirect(route('login'));
+            $isPage = ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET';
+            Response::redirect($isPage ? login_url($_SERVER['REQUEST_URI'] ?? null) : route('login'));
         }
 
         if (!is_admin()) {
