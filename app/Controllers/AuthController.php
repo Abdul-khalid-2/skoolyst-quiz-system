@@ -24,6 +24,7 @@ class AuthController extends Controller {
     }
 
     public function showLogin(): void {
+        remember_auth_next();
         $this->view('auth.login', ['errors' => [], 'old' => []]);
     }
 
@@ -49,10 +50,11 @@ class AuthController extends Controller {
             return;
         }
 
-        Response::redirect(route('home'));
+        redirect_after_auth();
     }
 
     public function showRegister(): void {
+        remember_auth_next();
         $this->view('auth.register', ['errors' => [], 'old' => []]);
     }
 
@@ -84,7 +86,7 @@ class AuthController extends Controller {
             return;
         }
 
-        Response::redirect(route('home'));
+        redirect_after_auth();
     }
 
     public function logout(): void {
@@ -95,6 +97,9 @@ class AuthController extends Controller {
     }
 
     public function redirectToSkoolyst(): void {
+        $next = safe_next_url(isset($_GET['next']) ? (string) $_GET['next'] : null);
+        if ($next !== null) $_SESSION['auth_next'] = $next;
+
         if (!$this->skoolystAuth->isConfigured()) {
             $this->view('auth.login', [
                 'errors' => ['_general' => 'Login with Skoolyst is not configured yet.'],
@@ -158,10 +163,13 @@ class AuthController extends Controller {
             );
         }
 
-        Response::redirect(route('home'));
+        redirect_after_auth();
     }
 
     public function redirectToGoogle(): void {
+        $next = safe_next_url(isset($_GET['next']) ? (string) $_GET['next'] : null);
+        if ($next !== null) $_SESSION['auth_next'] = $next;
+
         if (!$this->googleAuth->isConfigured()) {
             $this->view('auth.login', [
                 'errors' => ['_general' => 'Login with Google is not configured yet.'],
@@ -176,7 +184,7 @@ class AuthController extends Controller {
     public function handleGoogleCallback(): void {
         if (isset($_GET['error'])) {
             // User cancelled on Google's consent screen — not an error worth surfacing.
-            Response::redirect(route('login'));
+            Response::redirect(login_url());
             return;
         }
 
@@ -240,6 +248,6 @@ class AuthController extends Controller {
             );
         }
 
-        Response::redirect(route('home'));
+        redirect_after_auth();
     }
 }

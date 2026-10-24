@@ -8,7 +8,7 @@ use Skoolyst\Core\Response;
 class GuestMiddleware {
     public function handle(): void {
         if (is_authenticated()) {
-            Response::redirect(route('home'));
+            Response::redirect(safe_next_url(isset($_GET['next']) ? (string) $_GET['next'] : null) ?? route('home'));
         }
     }
 }
