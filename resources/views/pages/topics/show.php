@@ -99,10 +99,10 @@ echo json_encode($quizSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | 
                     <div class="sk-info-row"><span class="sk-info-label">Difficulty</span><span class="sk-info-value">{{ ucfirst($topic['difficulty']) }}</span></div>
                 </div>
                 @if($topic['description'])
-                <div class="sk-info-box">
+                <!-- <div class="sk-info-box">
                     <h6><i class="bi bi-lightbulb me-1"></i>Topic Description</h6>
                     <p class="small text-secondary-custom mb-0">{{ $topic['description'] }}</p>
-                </div>
+                </div> -->
                 @endif
                 @if(count($mcqs) > 0)
                 <a href="{{ route('practice.show', $topic['slug']) }}" class="btn btn-sk-gold w-100 mt-3"><i class="bi bi-play-circle-fill me-2"></i>Start Practice</a>
