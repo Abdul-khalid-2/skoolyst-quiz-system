@@ -1,6 +1,10 @@
 @extends('layouts.app')
 
-@section('title', $testType['name'] . ' - Test Type Detail')
+<?php
+$metaDescription = $testType['name'] . ' MCQs with answers: ' . (int) $mcqCount . ' practice questions across ' . (int) $topicCount . ' topics, plus ' . (int) $mockTestCount . ' mock tests. Free on Skoolyst MCQs.';
+?>
+@section('title', $testType['name'] . ' MCQs - Free Practice and Mock Tests')
+@section('meta_description', $metaDescription)
 
 @section('content')
 @include('components.breadcrumb', ['breadcrumbs' => [['label' => 'Test Types', 'url' => route('test-types.index')], ['label' => $testType['name'], 'url' => '#']]])

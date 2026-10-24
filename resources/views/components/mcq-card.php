@@ -12,6 +12,8 @@
             <i class="bi bi-list-ol"></i> 4 Options &middot; 
             <i class="bi bi-journal-text"></i> {{ $topic }}
         </small>
-        <a href="#" class="btn btn-sk-cyan btn-sm-sk">Practice</a>
+        <?php if (!empty($topicSlug)): ?>
+        <a href="{{ route('practice.show', $topicSlug) }}" class="btn btn-sk-cyan btn-sm-sk">Practice</a>
+        <?php endif; ?>
     </div>
 </div>

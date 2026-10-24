@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
-@section('title', 'Home')
+<?php $metaDescription = 'Free MCQs with answers for MDCAT, ECAT, CSS, PPSC and school exams. Practice subject-wise and topic-wise, then take timed mock tests on Skoolyst MCQs.'; ?>
+@section('full_title', 'Free MCQs for MDCAT, ECAT, CSS and School Exams | Skoolyst MCQs')
+@section('meta_description', $metaDescription)
 
 @section('content')
 

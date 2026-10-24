@@ -16,39 +16,76 @@ use Skoolyst\Models\Topic;
 
 class PageController extends Controller {
     public function sitemap(): void {
-        $urls = [
-            ['loc' => route('home'), 'priority' => '1.0'],
-            ['loc' => route('subjects.index'), 'priority' => '0.8'],
-            ['loc' => route('test-types.index'), 'priority' => '0.8'],
-            ['loc' => route('mock-tests.index'), 'priority' => '0.8'],
-            ['loc' => route('terms'), 'priority' => '0.3'],
-            ['loc' => route('privacy-policy'), 'priority' => '0.3'],
-        ];
+        $cacheFile = dirname(__DIR__, 2) . '/storage/cache/sitemap.xml';
 
-        foreach (Subject::all() as $subject) {
-            $urls[] = ['loc' => route('subjects.show', $subject['slug']), 'priority' => '0.7'];
-        }
-
-        foreach (TestType::all() as $testType) {
-            $urls[] = ['loc' => route('test-types.show', $testType['slug']), 'priority' => '0.7'];
-        }
-
-        foreach (Topic::all() as $topic) {
-            $urls[] = ['loc' => route('topics.show', $topic['slug']), 'priority' => '0.6'];
-        }
-
-        foreach (MockTest::all() as $mockTest) {
-            $urls[] = ['loc' => route('mock-tests.show', $mockTest['slug']), 'priority' => '0.6'];
+        if (!is_file($cacheFile) || (time() - filemtime($cacheFile)) > 3600) {
+            $xml = $this->buildSitemap();
+            $dir = dirname($cacheFile);
+            if (!is_dir($dir)) @mkdir($dir, 0775, true);
+            @file_put_contents($cacheFile, $xml, LOCK_EX);
+        } else {
+            $xml = (string) file_get_contents($cacheFile);
         }
 
         header('Content-Type: application/xml; charset=utf-8');
-        echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-        echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
-        foreach ($urls as $url) {
-            echo '<url><loc>' . htmlspecialchars($url['loc'], ENT_QUOTES | ENT_XML1, 'UTF-8') . '</loc><priority>' . $url['priority'] . '</priority></url>' . "\n";
-        }
-        echo '</urlset>';
+        header('Cache-Control: public, max-age=3600');
+        echo $xml;
     }
+
+    private function buildSitemap(): string {
+        $lastmod = static function (?string $date): ?string {
+            if (!$date) return null;
+            $ts = strtotime($date);
+            return $ts ? date('Y-m-d', $ts) : null;
+        };
+
+        $urls = [
+            ['loc' => route('home'), 'priority' => '1.0', 'changefreq' => 'daily'],
+            ['loc' => route('subjects.index'), 'priority' => '0.8', 'changefreq' => 'weekly'],
+            ['loc' => route('test-types.index'), 'priority' => '0.8', 'changefreq' => 'weekly'],
+            ['loc' => route('mock-tests.index'), 'priority' => '0.8', 'changefreq' => 'weekly'],
+            ['loc' => route('about'), 'priority' => '0.3', 'changefreq' => 'yearly'],
+            ['loc' => route('privacy-policy'), 'priority' => '0.3', 'changefreq' => 'yearly'],
+            ['loc' => route('terms'), 'priority' => '0.3', 'changefreq' => 'yearly'],
+        ];
+
+        foreach (Subject::all() as $subject) {
+            $urls[] = ['loc' => route('subjects.show', $subject['slug']), 'priority' => '0.7', 'changefreq' => 'weekly', 'lastmod' => $lastmod($subject['updated_at'] ?? null)];
+        }
+
+        foreach (TestType::all() as $testType) {
+            $urls[] = ['loc' => route('test-types.show', $testType['slug']), 'priority' => '0.8', 'changefreq' => 'weekly', 'lastmod' => $lastmod($testType['updated_at'] ?? null)];
+
+            // "MDCAT Biology MCQs"-style landing pages (test type + subject) are strong search targets.
+            foreach (TestType::relatedSubjects((int) $testType['id']) as $subject) {
+                if ((int) ($subject['mcq_count'] ?? 0) < 1) continue;
+                $urls[] = ['loc' => route('test-types.subject', [$testType['slug'], $subject['slug']]), 'priority' => '0.7', 'changefreq' => 'weekly', 'lastmod' => $lastmod($subject['updated_at'] ?? null)];
+            }
+        }
+
+        // Only topics that actually have questions - empty topic pages are thin content.
+        foreach (Topic::withQuestionsForSitemap() as $topic) {
+            $date = $lastmod($topic['last_changed'] ?? null);
+            $urls[] = ['loc' => route('topics.show', $topic['slug']), 'priority' => '0.7', 'changefreq' => 'weekly', 'lastmod' => $date];
+            $urls[] = ['loc' => route('practice.show', $topic['slug']), 'priority' => '0.6', 'changefreq' => 'weekly', 'lastmod' => $date];
+        }
+
+        foreach (MockTest::all() as $mockTest) {
+            $urls[] = ['loc' => route('mock-tests.show', $mockTest['slug']), 'priority' => '0.6', 'changefreq' => 'monthly', 'lastmod' => $lastmod($mockTest['updated_at'] ?? null)];
+        }
+
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+        $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+        foreach ($urls as $url) {
+            $xml .= '<url><loc>' . htmlspecialchars($url['loc'], ENT_QUOTES | ENT_XML1, 'UTF-8') . '</loc>';
+            if (!empty($url['lastmod'])) $xml .= '<lastmod>' . $url['lastmod'] . '</lastmod>';
+            $xml .= '<changefreq>' . $url['changefreq'] . '</changefreq><priority>' . $url['priority'] . '</priority></url>' . "\n";
+        }
+        return $xml . '</urlset>';
+    }
+
+    public function about(): void { $this->view('pages.about'); }
+
     public function home(): void {
         $subjects = Subject::allWithCounts();
 

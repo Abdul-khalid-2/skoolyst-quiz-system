@@ -10,7 +10,7 @@ $__adDescription = (string)($__ad['description'] ?? '');
 $__adCta = (string)($__ad['cta_text'] ?? '');
 $__adId = (string)($__ad['id'] ?? '');
 $__adClickHref = $__adId
-    ? route('ads.click', $__adId) . '?url=' . urlencode((string)($__ad['click_url'] ?? ''))
+    ? route('ads.click', $__adId) . '?url=' . urlencode((string)($__ad['click_url'] ?? '')) . '&sig=' . \Skoolyst\Services\AdService::signClick($__adId, (string)($__ad['click_url'] ?? ''))
     : (string)($__ad['click_url'] ?? '#');
 ?>
 <div class="sk-ad-slot">

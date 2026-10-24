@@ -11,29 +11,25 @@
                     <li class="mb-2"><a href="{{ route('subjects.index') }}">Subjects</a></li>
                     <li class="mb-2"><a href="{{ route('test-types.index') }}">Test Types</a></li>
                     <li class="mb-2"><a href="{{ route('mock-tests.index') }}">Mock Tests</a></li>
-                    <li class="mb-2"><a href="#">Practice</a></li>
+                    <li class="mb-2"><a href="{{ route('search') }}">Search MCQs</a></li>
                 </ul>
             </div>
             <div class="col-6 col-lg-2">
                 <h5>Company</h5>
                 <ul class="list-unstyled">
-                    <li class="mb-2"><a href="#">About</a></li>
-                    <li class="mb-2"><a href="#">Contact</a></li>
+                    <li class="mb-2"><a href="{{ route('about') }}">About</a></li>
                     <li class="mb-2"><a href="{{ route('privacy-policy') }}">Privacy</a></li>
                     <li class="mb-2"><a href="{{ route('terms') }}">Terms</a></li>
                 </ul>
             </div>
             <div class="col-lg-4">
-                <h5>Stay Updated</h5>
-                <p class="mb-2">Get notified about new MCQs and mock tests.</p>
-                <div class="input-group">
-                    <input type="email" class="form-control" placeholder="Your email" />
-                    <button class="btn btn-sk-cyan" type="button">Subscribe</button>
-                </div>
+                <h5>Start Practising</h5>
+                <p class="mb-2">Preparing for MDCAT, ECAT, CSS or school exams? Pick your test type and start free MCQs.</p>
+                <a class="btn btn-sk-cyan" href="{{ route('test-types.index') }}">Browse Test Types</a>
             </div>
         </div>
         <div class="sk-footer-bottom d-flex justify-content-between flex-wrap gap-2">
-            <span>&copy; 2026 Skoolyst MCQs. All rights reserved.</span>
+            <span>&copy; <?= date('Y') ?> Skoolyst MCQs. All rights reserved.</span>
             <span>Part of the Skoolyst Ecosystem</span>
         </div>
     </div>

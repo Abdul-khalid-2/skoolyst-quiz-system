@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
-@section('title', 'Test Types')
+<?php $metaDescription = 'Explore MCQ practice for MDCAT, ECAT, CSS, PPSC and school exams. Choose your test type and practice subject-wise MCQs with answers on Skoolyst.'; ?>
+@section('title', 'Test Types - MDCAT, ECAT and Board Exam MCQs')
+@section('meta_description', $metaDescription)
 
 @section('content')
 @include('components.breadcrumb', ['breadcrumbs' => [['label' => 'Test Types', 'url' => '#']]])

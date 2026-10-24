@@ -1,6 +1,12 @@
 @extends('layouts.app')
 
-@section('title', $subject['name'] . ' - Subject Detail')
+<?php
+$metaDescription = !empty($subject['description'])
+    ? $subject['name'] . ' MCQs with answers: ' . $subject['description']
+    : 'Practice ' . $subject['name'] . ' MCQs with answers and explanations. ' . (int) $mcqCount . ' questions across ' . (int) $topicCount . ' topics on Skoolyst MCQs.';
+?>
+@section('title', $subject['name'] . ' MCQs with Answers')
+@section('meta_description', $metaDescription)
 
 @section('content')
 @include('components.breadcrumb', ['breadcrumbs' => [['label' => 'Subjects', 'url' => route('subjects.index')], ['label' => $subject['name'], 'url' => '#']]])

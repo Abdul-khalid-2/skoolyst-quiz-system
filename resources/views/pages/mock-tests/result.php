@@ -1,5 +1,6 @@
 @extends('layouts.app')
 
+@section('robots', 'noindex, nofollow')
 @section('title', $mockTest['title'] . ' - Result')
 @section('meta_description', 'Your performance report for ' . $mockTest['title'] . '.')
 

@@ -88,7 +88,9 @@ class AuthController extends Controller {
     }
 
     public function logout(): void {
-        $this->auth->logout();
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && csrf_verify()) {
+            $this->auth->logout();
+        }
         Response::redirect(route('home'));
     }
 

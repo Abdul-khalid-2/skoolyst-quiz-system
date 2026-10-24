@@ -37,6 +37,12 @@ class AdService {
         return rtrim($base, '/') . '/' . ltrim($path, '/');
     }
 
+    /** HMAC so /ads/click can only redirect to destinations this site itself rendered. */
+    public static function signClick(string $adId, string $url): string {
+        $secret = (string) config('ads.api_key') . '|' . (string) ($_ENV['DB_PASSWORD'] ?? '');
+        return hash_hmac('sha256', $adId . '|' . $url, $secret);
+    }
+
     public static function trackImpression(string $adId): void {
         self::track('impression', $adId);
     }
