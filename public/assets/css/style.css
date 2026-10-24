@@ -1058,3 +1058,10 @@ a:hover { color: var(--sk-navy); }
 .sk-prose ul { color: var(--sk-text-secondary); line-height: 1.7; margin-bottom: 1rem; padding-left: 1.25rem; }
 .sk-prose li { margin-bottom: 0.4rem; }
 .sk-prose a { color: var(--sk-navy-light); font-weight: 600; }
+
+
+/* Pagination (admin lists) */
+.sk-pagination .page-link { color: var(--sk-navy); border-color: #dbe2ec; }
+.sk-pagination .page-link:hover { background-color: var(--sk-bg); color: var(--sk-navy-dark); }
+.sk-pagination .page-item.active .page-link { background-color: var(--sk-navy); border-color: var(--sk-navy); color: var(--sk-white); }
+.sk-pagination .page-item.disabled .page-link { color: #9aa5b5; }
