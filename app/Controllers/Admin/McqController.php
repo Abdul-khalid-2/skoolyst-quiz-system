@@ -12,8 +12,43 @@ use Skoolyst\Models\Topic;
 use Skoolyst\Services\EmailService;
 
 class McqController extends Controller {
+    private const PER_PAGE_OPTIONS = [30, 50];
+
     public function index(): void {
-        $this->view('admin.mcqs.index', ['mcqs' => Mcq::all()]);
+        $perPage = (int) ($_GET['per_page'] ?? self::PER_PAGE_OPTIONS[0]);
+        if (!in_array($perPage, self::PER_PAGE_OPTIONS, true)) {
+            $perPage = self::PER_PAGE_OPTIONS[0];
+        }
+
+        $topicParam = (string) ($_GET['topic_id'] ?? '');
+        $filters = [
+            'q' => mb_substr(trim((string) ($_GET['q'] ?? '')), 0, 100),
+            'subject_id' => max(0, (int) ($_GET['subject_id'] ?? 0)),
+            'topic_id' => $topicParam === 'none' ? 'none' : max(0, (int) $topicParam),
+            'difficulty' => in_array($_GET['difficulty'] ?? '', ['easy', 'medium', 'hard'], true) ? (string) $_GET['difficulty'] : '',
+        ];
+
+        $result = Mcq::paginate($filters, max(1, (int) ($_GET['page'] ?? 1)), $perPage);
+
+        // Query string that recreates the current filters (without the page number) for pagination links.
+        $query = array_filter([
+            'q' => $filters['q'],
+            'subject_id' => $filters['subject_id'] ?: null,
+            'topic_id' => $filters['topic_id'] ?: null,
+            'difficulty' => $filters['difficulty'],
+            'per_page' => $perPage !== self::PER_PAGE_OPTIONS[0] ? $perPage : null,
+        ], static fn($v) => $v !== null && $v !== '');
+
+        $this->view('admin.mcqs.index', [
+            'mcqs' => $result['items'],
+            'pagination' => $result,
+            'filters' => $filters,
+            'query' => $query,
+            'hasFilters' => (bool) array_diff_key($query, ['per_page' => 1]),
+            'perPageOptions' => self::PER_PAGE_OPTIONS,
+            'subjects' => Subject::all(),
+            'topicsBySubject' => Topic::allGroupedBySubject(),
+        ]);
     }
 
     public function create(): void {
@@ -106,7 +141,7 @@ class McqController extends Controller {
         Mcq::update($id, $data);
         Mcq::saveOptions($id, $options);
 
-        Response::redirect(route('dashboard.mcqs'));
+        Response::redirect(safe_next_url(isset($_POST['return']) ? (string) $_POST['return'] : null) ?? route('dashboard.mcqs'));
     }
 
     public function destroy(string $id): void {
@@ -114,7 +149,7 @@ class McqController extends Controller {
             Mcq::delete((int) $id);
         }
 
-        Response::redirect(route('dashboard.mcqs'));
+        Response::redirect(safe_next_url(isset($_POST['return']) ? (string) $_POST['return'] : null) ?? route('dashboard.mcqs'));
     }
 
     /**

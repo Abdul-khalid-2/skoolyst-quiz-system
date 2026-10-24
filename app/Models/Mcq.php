@@ -27,6 +27,94 @@ class Mcq extends Model {
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    /**
+     * One page of MCQs for the admin list, with optional filters.
+     *
+     * Filters: q (text in the question, or an exact MCQ id), subject_id, topic_id ('none' = no topic),
+     * difficulty (easy|medium|hard).
+     *
+     * @param array{q?: string, subject_id?: int, topic_id?: int|string, difficulty?: string} $filters
+     * @return array{items: array<int, array<string, mixed>>, total: int, page: int, pages: int, per_page: int, from: int, to: int}
+     */
+    public static function paginate(array $filters, int $page, int $perPage): array {
+        $perPage = max(1, min(200, $perPage));
+        $where = [];
+        $params = [];
+
+        $q = trim((string) ($filters['q'] ?? ''));
+        if ($q !== '') {
+            // Escape LIKE wildcards so searching for "50%" or "a_b" matches literally.
+            $like = '%' . str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $q) . '%';
+            if (ctype_digit($q)) {
+                $where[] = '(q.question_text LIKE :q_text OR q.id = :q_id)';
+                $params['q_id'] = (int) $q;
+            } else {
+                $where[] = 'q.question_text LIKE :q_text';
+            }
+            $params['q_text'] = $like;
+        }
+
+        $subjectId = (int) ($filters['subject_id'] ?? 0);
+        if ($subjectId > 0) {
+            $where[] = 'q.subject_id = :subject_id';
+            $params['subject_id'] = $subjectId;
+        }
+
+        $topic = $filters['topic_id'] ?? 0;
+        if ($topic === 'none') {
+            $where[] = '(q.topic_id IS NULL OR q.topic_id = 0)';
+        } elseif ((int) $topic > 0) {
+            $where[] = 'q.topic_id = :topic_id';
+            $params['topic_id'] = (int) $topic;
+        }
+
+        $difficulty = (string) ($filters['difficulty'] ?? '');
+        if (in_array($difficulty, ['easy', 'medium', 'hard'], true)) {
+            $where[] = 'q.difficulty = :difficulty';
+            $params['difficulty'] = $difficulty;
+        }
+
+        $whereSql = $where ? ' WHERE ' . implode(' AND ', $where) : '';
+        $db = Database::connection();
+
+        $countStmt = $db->prepare('SELECT COUNT(*) FROM mcq_questions q' . $whereSql);
+        $countStmt->execute($params);
+        $total = (int) $countStmt->fetchColumn();
+
+        $pages = max(1, (int) ceil($total / $perPage));
+        $page = max(1, min($page, $pages));
+        $offset = ($page - 1) * $perPage;
+
+        // id is a tie-breaker so rows never repeat or vanish between pages.
+        $stmt = $db->prepare(
+            'SELECT q.*, s.name AS subject_name, t.name AS topic_name
+             FROM mcq_questions q
+             JOIN mcq_subjects s ON s.id = q.subject_id
+             LEFT JOIN mcq_topics t ON t.id = q.topic_id'
+            . $whereSql .
+            ' ORDER BY q.created_at DESC, q.id DESC
+             LIMIT :limit OFFSET :offset'
+        );
+        foreach ($params as $name => $value) {
+            $stmt->bindValue(':' . $name, $value, is_int($value) ? \PDO::PARAM_INT : \PDO::PARAM_STR);
+        }
+        $stmt->bindValue(':limit', $perPage, \PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, \PDO::PARAM_INT);
+        $stmt->execute();
+
+        $items = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+        return [
+            'items' => $items,
+            'total' => $total,
+            'page' => $page,
+            'pages' => $pages,
+            'per_page' => $perPage,
+            'from' => $total === 0 ? 0 : $offset + 1,
+            'to' => $offset + count($items),
+        ];
+    }
+
     public static function count(): int {
         return (int) Database::connection()->query('SELECT COUNT(*) FROM mcq_questions')->fetchColumn();
     }
