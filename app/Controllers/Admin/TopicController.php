@@ -96,7 +96,7 @@ class TopicController extends Controller {
             'subject_id' => (int) old('subject_id'),
             'name' => trim((string) old('name')),
             'slug' => trim((string) old('slug')),
-            'description' => trim((string) old('description')),
+            'description' => rich_text_html((string) old('description')),
             'icon' => trim((string) old('icon')),
             'difficulty' => (string) old('difficulty', 'medium'),
         ];
@@ -110,6 +110,10 @@ class TopicController extends Controller {
 
         if ($data['subject_id'] <= 0 || Subject::find($data['subject_id']) === null) {
             $errors['subject_id'] = 'Please choose a valid subject.';
+        }
+
+        if (strlen($data['description']) > 20000) {
+            $errors['description'] = 'The description is too long. Please shorten it.';
         }
 
         if (!in_array($data['difficulty'], ['easy', 'medium', 'hard'], true)) {

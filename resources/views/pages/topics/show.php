@@ -14,7 +14,7 @@ $quizSchema = [
     '@context'          => 'https://schema.org',
     '@type'             => 'Quiz',
     'name'              => $topic['name'],
-    'description'       => $topic['description'] ?? ('Practice ' . $topic['name'] . ' MCQs as part of ' . $topic['subject_name'] . '.'),
+    'description'       => plain_excerpt($topic['description'] ?? null, 300) ?: ('Practice ' . $topic['name'] . ' MCQs as part of ' . $topic['subject_name'] . '.'),
     'url'               => htmlspecialchars(canonical_url(), ENT_QUOTES, 'UTF-8'),
     'educationalLevel'  => ucfirst($topic['difficulty']),
     'numberOfQuestions' => count($mcqs),
@@ -55,7 +55,12 @@ echo json_encode($quizSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | 
                     <span class="sk-badge sk-badge-{{ $topic['difficulty'] }}"><i class="bi bi-bar-chart"></i> {{ ucfirst($topic['difficulty']) }}</span>
                 </div>
                 <h1>{{ $topic['name'] }}</h1>
-                <p>{{ $topic['description'] ?? ('Practice ' . $topic['name'] . ' MCQs as part of ' . $topic['subject_name'] . '.') }}</p>
+                <?php $descriptionHtml = rich_text_html($topic['description'] ?? null); ?>
+                @if($descriptionHtml !== '')
+                @include('components.description-slider', ['html' => $descriptionHtml])
+                @else
+                <p>Practice {{ $topic['name'] }} MCQs as part of {{ $topic['subject_name'] }}.</p>
+                @endif
                 <div class="d-flex gap-3 flex-wrap mt-3">
                     <div><i class="bi bi-collection text-cyan"></i> <strong>{{ count($mcqs) }}</strong> MCQs</div>
                     <div><i class="bi bi-bar-chart text-cyan"></i> <strong>{{ ucfirst($topic['difficulty']) }}</strong> difficulty</div>
@@ -98,12 +103,6 @@ echo json_encode($quizSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | 
                     <div class="sk-info-row"><span class="sk-info-label">Total MCQs</span><span class="sk-info-value">{{ count($mcqs) }}</span></div>
                     <div class="sk-info-row"><span class="sk-info-label">Difficulty</span><span class="sk-info-value">{{ ucfirst($topic['difficulty']) }}</span></div>
                 </div>
-                @if($topic['description'])
-                <!-- <div class="sk-info-box">
-                    <h6><i class="bi bi-lightbulb me-1"></i>Topic Description</h6>
-                    <p class="small text-secondary-custom mb-0">{{ $topic['description'] }}</p>
-                </div> -->
-                @endif
                 @if(count($mcqs) > 0)
                 <a href="{{ route('practice.show', $topic['slug']) }}" class="btn btn-sk-gold w-100 mt-3"><i class="bi bi-play-circle-fill me-2"></i>Start Practice</a>
                 @endif

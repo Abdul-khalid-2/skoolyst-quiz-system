@@ -51,7 +51,51 @@
     </div>
 
     <div class="col-12">
-        <label for="description" class="sk-auth-label">Description <span class="text-secondary-custom fw-normal">(optional)</span></label>
-        <textarea class="form-control" id="description" name="description" rows="3">{{ old('description', $topic['description'] ?? '') }}</textarea>
+        <label for="description" class="sk-auth-label">Description <span class="text-secondary-custom fw-normal">(optional &mdash; headings, bold/italic and lists only)</span></label>
+        <div id="descriptionEditor" class="sk-rte" style="display:none"></div>
+        <textarea class="form-control" id="description" name="description" rows="6">{{ rich_text_html(old('description', $topic['description'] ?? '')) }}</textarea>
+        @if(!empty($errors['description']))
+        <div class="text-danger small mt-1">{{ $errors['description'] }}</div>
+        @endif
     </div>
 </div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" integrity="sha384-ecIckRi4QlKYya/FQUbBUjS4qp65jF/J87Guw5uzTbO1C1Jfa/6kYmd6dXUF6D7i" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js" integrity="sha384-utBUCeG4SYaCm4m7GQZYr8Hy8Fpy3V4KGjBZaf4WTKOcwhCYpt/0PfeEe3HNlwx8" crossorigin="anonymous"></script>
+<script>
+// Simple description editor. If Quill fails to load, the plain textarea above keeps working.
+(function () {
+    var box = document.getElementById('descriptionEditor');
+    var field = document.getElementById('description');
+    if (!window.Quill || !box || !field) return;
+
+    var quill = new Quill(box, {
+        theme: 'snow',
+        placeholder: 'Write a short description of this topic...',
+        // Whitelist: anything else (images, links, colours, fonts...) is dropped, even when pasted.
+        formats: ['header', 'bold', 'italic', 'list'],
+        modules: {
+            toolbar: [
+                [{ header: [2, 3, 4, false] }],
+                ['bold', 'italic'],
+                [{ list: 'ordered' }, { list: 'bullet' }],
+                ['clean']
+            ]
+        }
+    });
+
+    if (field.value.trim() !== '') {
+        quill.setContents(quill.clipboard.convert({ html: field.value }), 'silent');
+    }
+
+    box.style.display = '';
+    field.style.display = 'none';
+
+    var form = field.closest('form');
+    if (form) {
+        form.addEventListener('submit', function () {
+            field.value = quill.getText().trim() === '' ? '' : quill.getSemanticHTML();
+        });
+    }
+})();
+</script>
