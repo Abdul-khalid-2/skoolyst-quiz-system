@@ -24,7 +24,12 @@ $metaDescription = $topic['name'] . ' MCQs for ' . $testType['name'] . ' ' . $su
             <span class="sk-badge sk-badge-{{ $topic['difficulty'] }}">{{ ucfirst($topic['difficulty']) }}</span>
         </div>
         <h1>{{ $topic['name'] }}</h1>
-        <p>{{ $topic['description'] ?? ('Practice ' . $topic['name'] . ' MCQs as part of ' . $testType['name'] . ' ' . $subject['name'] . '.') }}</p>
+        <?php $descriptionHtml = rich_text_html($topic['description'] ?? null); ?>
+        @if($descriptionHtml !== '')
+        @include('components.description-slider', ['html' => $descriptionHtml])
+        @else
+        <p>Practice {{ $topic['name'] }} MCQs as part of {{ $testType['name'] }} {{ $subject['name'] }}.</p>
+        @endif
         <div class="d-flex gap-2 flex-wrap mt-3">
             <a href="{{ route('practice.show', $topic['slug']) }}" class="btn btn-sk-gold btn-lg"><i class="bi bi-play-circle-fill me-2"></i>Start Practice</a>
             <a href="{{ route('test-types.subject', [$testType['slug'], $subject['slug']]) }}" class="btn btn-sk-outline-light btn-lg"><i class="bi bi-arrow-left me-2"></i>Back to {{ $subject['name'] }}</a>

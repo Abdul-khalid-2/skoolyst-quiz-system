@@ -979,3 +979,68 @@ function initSearchFilter() {
     });
   }
 }
+
+/* ---------- Topic description slider (left/right pages of ~8-9 lines) ---------- */
+(function () {
+  function initDescSlider(root) {
+    var viewport = root.querySelector('.sk-desc-viewport');
+    var content = root.querySelector('.sk-desc-content');
+    var controls = root.querySelector('.sk-desc-controls');
+    var prevBtn = root.querySelector('[data-desc-prev]');
+    var nextBtn = root.querySelector('[data-desc-next]');
+    var count = root.querySelector('.sk-desc-count');
+    if (!viewport || !content || !controls || !prevBtn || !nextBtn || !count) return;
+
+    var page = 0, pages = 1, width = 0;
+    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function show(index, animate) {
+      page = Math.max(0, Math.min(pages - 1, index));
+      viewport.scrollTo({ left: page * width, behavior: animate && !reduceMotion ? 'smooth' : 'auto' });
+      count.textContent = (page + 1) + ' / ' + pages;
+      prevBtn.disabled = page === 0;
+      nextBtn.disabled = page === pages - 1;
+    }
+
+    // Text is laid out in columns as wide as the box; each column is one "page".
+    function layout() {
+      root.classList.add('is-paged');
+      content.style.columnWidth = '';
+      width = viewport.getBoundingClientRect().width;
+      if (width < 50) { root.classList.remove('is-paged'); controls.hidden = true; return; }
+      content.style.columnWidth = width + 'px';
+      pages = Math.max(1, Math.round(viewport.scrollWidth / width));
+      if (pages <= 1) {                         // short text: no slider needed
+        root.classList.remove('is-paged');
+        content.style.columnWidth = '';
+        controls.hidden = true;
+        return;
+      }
+      controls.hidden = false;
+      show(page, false);
+    }
+
+    prevBtn.addEventListener('click', function () { show(page - 1, true); });
+    nextBtn.addEventListener('click', function () { show(page + 1, true); });
+    viewport.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowLeft') { show(page - 1, true); e.preventDefault(); }
+      if (e.key === 'ArrowRight') { show(page + 1, true); e.preventDefault(); }
+    });
+
+    var startX = 0, startY = 0;
+    viewport.addEventListener('touchstart', function (e) { startX = e.touches[0].clientX; startY = e.touches[0].clientY; }, { passive: true });
+    viewport.addEventListener('touchend', function (e) {
+      var dx = e.changedTouches[0].clientX - startX, dy = e.changedTouches[0].clientY - startY;
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) show(page + (dx < 0 ? 1 : -1), true);
+    }, { passive: true });
+
+    var timer = null;
+    window.addEventListener('resize', function () { clearTimeout(timer); timer = setTimeout(layout, 150); });
+    window.addEventListener('load', layout);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
+    layout();
+  }
+
+  function boot() { document.querySelectorAll('[data-desc-slider]').forEach(initDescSlider); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
